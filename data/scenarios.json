@@ -1,0 +1,137 @@
+[
+  {
+    "id": "s1",
+    "title": "The School Fee Dilemma",
+    "narrative": "Your daughter Priya's school fees of ₹3,000 are due next week. You have ₹4,500 in your Household jar, but the landlord is also asking for this month's rent of ₹2,500. What will you do?",
+    "difficulty": "easy",
+    "category": "budgeting",
+    "choices": [
+      {
+        "id": "c1",
+        "text": "Pay school fees first, negotiate rent delay",
+        "impact": { "household": -3000, "finHealth": 5, "xpReward": 50, "feedback": "Smart choice! Education is an investment. Talking to your landlord showed great communication skills." },
+        "isOptimal": true
+      },
+      {
+        "id": "c2",
+        "text": "Pay rent first, ask school for extension",
+        "impact": { "household": -2500, "finHealth": 2, "xpReward": 20, "feedback": "Rent is important, but delaying education fees can add late charges. Consider prioritizing long-term goals." },
+        "isOptimal": false
+      },
+      {
+        "id": "c3",
+        "text": "Borrow from a neighbor to pay both",
+        "impact": { "household": 0, "finHealth": -3, "xpReward": 5, "feedback": "Borrowing creates a new debt. It's better to negotiate directly than to add more financial obligations." },
+        "isOptimal": false
+      }
+    ]
+  },
+  {
+    "id": "s2",
+    "title": "The Festival Temptation",
+    "narrative": "Diwali is around the corner! Your SHG friends are all buying new clothes and sweets. You have ₹2,000 in your Children jar and ₹5,000 in Savings. Your neighbor suggests pooling money for bulk shopping to save 30%.",
+    "difficulty": "easy",
+    "category": "savings",
+    "choices": [
+      {
+        "id": "c1",
+        "text": "Use only ₹1,500 from Children jar, join bulk shopping",
+        "impact": { "children": -1500, "finHealth": 8, "xpReward": 80, "feedback": "Brilliant! You celebrated Diwali AND saved money through smart bulk buying. Your savings stay protected!" },
+        "isOptimal": true
+      },
+      {
+        "id": "c2",
+        "text": "Spend all ₹2,000 from Children jar on individual shopping",
+        "impact": { "children": -2000, "finHealth": 0, "xpReward": 20, "feedback": "You enjoyed the festival but spent more than needed. Bulk buying with friends could have saved you ₹600!" },
+        "isOptimal": false
+      },
+      {
+        "id": "c3",
+        "text": "Dip into Savings for a grand celebration",
+        "impact": { "children": -2000, "savings": -2000, "finHealth": -5, "xpReward": 5, "feedback": "Raiding savings for wants is risky. What if an emergency strikes next month without your safety net?" },
+        "isOptimal": false
+      }
+    ]
+  },
+  {
+    "id": "s3",
+    "title": "Medical Emergency",
+    "narrative": "Your mother-in-law suddenly falls ill and needs ₹4,000 for hospital bills. You have ₹3,000 in your Emergency jar and ₹5,000 in Savings. Time is critical!",
+    "difficulty": "medium",
+    "category": "emergency",
+    "choices": [
+      {
+        "id": "c1",
+        "text": "Use Emergency jar + ₹1,000 from Savings",
+        "impact": { "emergency": -3000, "savings": -1000, "finHealth": 5, "xpReward": 100, "feedback": "This is exactly what the Emergency jar is for! Using minimal savings shows great financial discipline." },
+        "isOptimal": true
+      },
+      {
+        "id": "c2",
+        "text": "Take a loan from moneylender at 5% monthly interest",
+        "impact": { "finHealth": -8, "xpReward": 10, "feedback": "High-interest loans can trap you in a debt cycle. You had emergency funds available — always check your jars first!" },
+        "isOptimal": false
+      },
+      {
+        "id": "c3",
+        "text": "Use all Savings to pay and keep Emergency intact",
+        "impact": { "savings": -4000, "finHealth": 1, "xpReward": 30, "feedback": "You protected the Emergency jar but drained Savings. The Emergency jar exists for moments like this!" },
+        "isOptimal": false
+      }
+    ]
+  },
+  {
+    "id": "s4",
+    "title": "The Micro-Business Opportunity",
+    "narrative": "A wholesale dealer offers you 50 sarees at ₹200 each to sell at ₹400 in your village. You need ₹10,000 upfront. You have ₹8,000 in Savings. Your SHG can lend ₹5,000 at 1% monthly interest.",
+    "difficulty": "hard",
+    "category": "investment",
+    "choices": [
+      {
+        "id": "c1",
+        "text": "Borrow ₹5,000 from SHG, use ₹5,000 from Savings",
+        "impact": { "savings": -5000, "finHealth": 7, "xpReward": 150, "feedback": "Smart move! SHG loans have low interest, and you kept ₹3,000 in savings as backup. The potential profit of ₹10,000 far outweighs the small interest." },
+        "isOptimal": true
+      },
+      {
+        "id": "c2",
+        "text": "Use all ₹8,000 from Savings, borrow ₹2,000 from neighbor",
+        "impact": { "savings": -8000, "finHealth": -2, "xpReward": 40, "feedback": "Emptying savings is risky. If the sarees don't sell quickly, you have no safety net. SHG loans are safer than personal debt." },
+        "isOptimal": false
+      },
+      {
+        "id": "c3",
+        "text": "Skip the opportunity — it's too risky",
+        "impact": { "finHealth": -1, "xpReward": 20, "feedback": "Being cautious is okay, but calculated risks with SHG support can build wealth. ₹10,000 potential profit with SHG backing is reasonable!" },
+        "isOptimal": false
+      }
+    ]
+  },
+  {
+    "id": "s5",
+    "title": "The Insurance Decision",
+    "narrative": "An insurance agent visits your SHG meeting and offers health insurance at ₹150/month per family member. Your family of 4 would cost ₹600/month. Last year, you spent ₹8,000 on medical bills.",
+    "difficulty": "medium",
+    "category": "planning",
+    "choices": [
+      {
+        "id": "c1",
+        "text": "Start with coverage for 2 members (₹300/month)",
+        "impact": { "household": -300, "finHealth": 6, "xpReward": 120, "feedback": "Starting small is practical! Cover the most vulnerable family members first. You can add more as income grows." },
+        "isOptimal": true
+      },
+      {
+        "id": "c2",
+        "text": "Cover all 4 immediately (₹600/month)",
+        "impact": { "household": -600, "finHealth": 3, "xpReward": 60, "feedback": "Full coverage is great, but ₹600/month is 4% of income. Make sure other jars aren't starved." },
+        "isOptimal": false
+      },
+      {
+        "id": "c3",
+        "text": "Skip insurance — you've been healthy so far",
+        "impact": { "finHealth": -4, "xpReward": 10, "feedback": "Last year's ₹8,000 medical bill was a warning. Insurance at ₹3,600/year vs ₹8,000 in bills — the math is clear!" },
+        "isOptimal": false
+      }
+    ]
+  }
+]

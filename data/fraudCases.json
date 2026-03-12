@@ -1,0 +1,72 @@
+[
+  {
+    "id": "f1",
+    "title": "Fake Bank SMS",
+    "type": "sms",
+    "difficulty": "easy",
+    "message": "Dear Customer, Your SBI account has been BLOCKED due to KYC expiry. Click here to update immediately: http://sbi-kyc-update.xyz/verify. Failure to update within 24hrs will result in permanent account closure. — SBI Team",
+    "redFlags": [
+      "Suspicious URL (not official sbi.co.in)",
+      "Creates urgency with '24hrs' deadline",
+      "Banks never send KYC links via SMS",
+      "Uses fear tactics ('permanent closure')"
+    ],
+    "isScam": true,
+    "explanation": "Banks never ask you to update KYC through SMS links. Always visit your bank branch directly or use the official app. Scammers create fake websites that look real to steal your information."
+  },
+  {
+    "id": "f2",
+    "title": "Lottery Winning Call",
+    "type": "call",
+    "difficulty": "easy",
+    "message": "Congratulations! You have won ₹5,00,000 in the Jio Lucky Draw! To claim your prize, please share your Aadhaar number and pay a processing fee of ₹2,000 via UPI to claim@paytm. Call back at 9876543210.",
+    "redFlags": [
+      "You never entered any lottery",
+      "Asking for Aadhaar number",
+      "Asking to PAY money to receive a prize",
+      "Using personal UPI ID, not official channel"
+    ],
+    "isScam": true,
+    "explanation": "Legitimate lotteries never ask winners to pay fees. If you didn't enter a contest, you can't win it! Never share Aadhaar or personal details with unknown callers."
+  },
+  {
+    "id": "f3",
+    "title": "SHG Loan Message",
+    "type": "sms",
+    "difficulty": "medium",
+    "message": "Namaste! Your SHG loan of ₹10,000 at 12% annual interest has been approved by NABARD. Please visit your nearest branch with ID proof to collect. Ref: SHG/2024/4521. — NABARD Regional Office",
+    "redFlags": [],
+    "isScam": false,
+    "explanation": "This is a legitimate message. It doesn't ask for personal information, has a proper reference number, and asks you to visit a branch in person. Always verify by calling your SHG leader."
+  },
+  {
+    "id": "f4",
+    "title": "WhatsApp Investment Scheme",
+    "type": "sms",
+    "difficulty": "medium",
+    "message": "🔥 DOUBLE YOUR MONEY IN 30 DAYS! 🔥 Invest ₹5,000 today and get ₹10,000 guaranteed! Join our WhatsApp group for daily trading tips from SEBI-certified experts. Limited spots! Send 'JOIN' to 8888899999",
+    "redFlags": [
+      "Guaranteed returns (no investment is guaranteed)",
+      "100% return in 30 days is unrealistic",
+      "SEBI-certified experts don't recruit via WhatsApp",
+      "Creates artificial scarcity ('limited spots')"
+    ],
+    "isScam": true,
+    "explanation": "No legitimate investment guarantees doubling your money. SEBI-registered advisors operate through proper channels. These Ponzi schemes pay early investors with new investors' money until they collapse."
+  },
+  {
+    "id": "f5",
+    "title": "Electricity Bill Warning",
+    "type": "call",
+    "difficulty": "hard",
+    "message": "This is from the Electricity Board. Your bill of ₹3,200 is overdue by 45 days. Your power will be disconnected today at 6 PM unless you pay immediately via UPI to this number: 7777788888. Press 1 to pay now.",
+    "redFlags": [
+      "Electricity board sends written notices, not phone calls",
+      "Asking for UPI payment to a phone number",
+      "Creating extreme urgency ('today at 6 PM')",
+      "No mention of consumer number or account details"
+    ],
+    "isScam": true,
+    "explanation": "The Electricity Board always sends written disconnection notices and provides at least 15 days to pay. They accept payments through their official website, app, or authorized centers — never via UPI to random numbers."
+  }
+]
