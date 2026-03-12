@@ -23,6 +23,14 @@
 
 Through an engaging level-based progression system, users learn essential financial concepts—from safe budgeting using the "Jar" method to recognizing modern digital UPI scams.
 
+
+## 🚀 Recent Architecture Updates
+
+- **100% On-Device Storage (Redux Persist):** We successfully migrated all user data (XP, gamification levels, language preferences, and jar balances) directly to the mobile device using `AsyncStorage` with Redux Persist. No cloud backend is required, ensuring complete offline capability for rural areas with spotty internet connectivity.
+- **Deep Localization (9 Languages):** Fully integrated 9 Indian languages (English, Hindi, Tamil, Telugu, Bengali, Kannada, Marathi, Gujarati, Malayalam) across all UI elements, dynamic translation keys, and text-to-speech audio engines. 
+- **Responsive Flexbox Scaling for Vernacular Content:** Refactored main dashboards (Jars Screen, Money Allocations, Home Screen) with flexible wrapping (`flexWrap`) to ensure longer regional dialect characters render neatly without breaking the mobile UI.
+- **Dynamic Onboarding & State Restoration:** Overhauled the global entry point. The app automatically detects if a user is a first-time opener to show the language-picker Onboarding, or automatically rehydrates their local save file and boots directly to their customized ledger.
+
 ---
 
 ## ✨ Key Features
