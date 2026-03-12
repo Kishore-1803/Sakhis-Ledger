@@ -92,7 +92,7 @@ export default function JarsScreen({ navigation }: any) {
         {selectedJar && (
           <View style={styles.actionCard}>
             <View style={styles.actionHeader}>
-               <View style={{flexDirection: 'row', alignItems: 'center'}}>
+               <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1}}>
                  <TranslatedText style={styles.actionTitle}>allocateTo</TranslatedText>
                  <Text style={styles.actionTitle}> </Text>
                  <TranslatedText style={styles.actionTitle}>{selectedJar}</TranslatedText>
@@ -103,7 +103,7 @@ export default function JarsScreen({ navigation }: any) {
             </View>
             <TextInput
               style={styles.input}
-              placeholder={'Enter Amount'}
+              placeholder={t('enterAmount', lang) || 'Enter Amount'}
               placeholderTextColor={Colors.neutral.gray}
               keyboardType="numeric"
               value={amount}

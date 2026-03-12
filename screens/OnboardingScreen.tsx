@@ -5,18 +5,12 @@ import { useDispatch } from 'react-redux';
 import { setUserName, setLanguage, setGuide, completeOnboarding } from '../store/userSlice';
 import { Colors } from '../constants/theme';
 import { AudioEngine } from '../utils/audioEngine';
+import { LANGUAGES } from '../utils/i18n';
 import Feather from '@expo/vector-icons/Feather';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
 }
-
-const LANGUAGES = [
-  { code: 'hi', label: 'हिंदी', subLabel: 'Hindi' },
-  { code: 'en', label: 'English', subLabel: 'English' },
-  { code: 'ta', label: 'தமிழ்', subLabel: 'Tamil' },
-  { code: 'ml', label: 'മലയാളം', subLabel: 'Malayalam' },
-];
 
 const GUIDES = [
   { 

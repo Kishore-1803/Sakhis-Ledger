@@ -33,7 +33,7 @@ export default function JarCard({ name, amount = 0, icon, goal = 5000, onPress, 
       <Text style={[styles.amount, { color: isGoalReached ? Colors.feedback.success : Colors.neutral.darkGray }]}>
         ₹{(amount || 0).toLocaleString('en-IN')}
       </Text>
-      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}><TranslatedText style={styles.goalText}>Goal: </TranslatedText><Text style={styles.goalText}>₹{(goal || 0).toLocaleString('en-IN')}</Text></View>
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap'}}><TranslatedText style={styles.goalText}>goal</TranslatedText><Text style={styles.goalText}>: ₹{(goal || 0).toLocaleString('en-IN')}</Text></View>
     </TouchableOpacity>
   );
 }

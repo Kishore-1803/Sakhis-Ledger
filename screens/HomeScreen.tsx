@@ -51,10 +51,10 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   const jarData = [
-    { name: 'Household', amount: sim.jars.household, icon: 'home', goal: 6000 },
-    { name: 'Children', amount: sim.jars.children, icon: 'smile', goal: 3000 },
-    { name: 'Savings', amount: sim.jars.savings, icon: 'briefcase', goal: 5000 },
-    { name: 'Emergency', amount: sim.jars.emergency, icon: 'shield', goal: 4000 },
+    { name: 'household', amount: sim.jars.household, icon: 'home', goal: 6000 },
+    { name: 'children', amount: sim.jars.children, icon: 'smile', goal: 3000 },
+    { name: 'savings', amount: sim.jars.savings, icon: 'briefcase', goal: 5000 },
+    { name: 'emergency', amount: sim.jars.emergency, icon: 'shield', goal: 4000 },
   ];
 
   return (
@@ -70,7 +70,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         <View style={styles.sectionHeader}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Feather name="crosshair" size={24} color={Colors.sakhi.darker} style={{marginRight: 8}} />
-            <TranslatedText style={styles.sectionTitle}>Daily Missions</TranslatedText>
+            <TranslatedText style={styles.sectionTitle}>dailyMissions</TranslatedText>
           </View>
           <TouchableOpacity onPress={playAudioHelp}>
             <Feather name="volume-2" size={24} color={Colors.sakhi.darker} />
@@ -80,35 +80,35 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         <View style={styles.missionsCard}>
           <MissionRow 
             icon="book" 
-            title="Complete 1 Lesson" 
+            title="complete1Lesson" 
             xp="+50" 
             flame="+25"
             onPress={() => navigation.navigate('Quests')} 
-            btnText="GO"
+            btnText="go"
           />
           <MissionRow 
             icon="shield" 
-            title="Defeat A Scam" 
+            title="defeatAScam" 
             xp="+100" 
             flame="+50"
             onPress={() => navigation.navigate('Arena')} 
-            btnText="GO"
+            btnText="go"
           />
           <MissionRow 
             icon="briefcase" 
-            title="Add to Savings Jar" 
+            title="addToSavingsJar" 
             xp="+30" 
             flame="+15"
             onPress={() => navigation.navigate('Jars')} 
-            btnText="GO"
+            btnText="go"
           />
           <MissionRow 
             icon="alert-circle" 
-            title="Face a Life Event" 
+            title="faceALifeEvent" 
             xp="+20" 
             flame="+10"
             onPress={handleTriggerEvent} 
-            btnText="GO"
+            btnText="go"
           />
         </View>
 
@@ -116,7 +116,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         <View style={[styles.sectionHeader, { marginTop: 24, marginBottom: 16 }]}>
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
             <Feather name="box" size={24} color={Colors.sakhi.darker} style={{marginRight: 8}} />
-            <TranslatedText style={styles.sectionTitle}>Your Jars</TranslatedText>
+            <TranslatedText style={styles.sectionTitle}>yourJars</TranslatedText>
           </View>
         </View>
         <View style={styles.jarsGrid}>

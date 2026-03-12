@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import { setLanguage } from '../store/userSlice';
+import { setLanguage, resetUser } from '../store/userSlice';
+import { resetSimulation } from '../store/simulationSlice';
 import { Colors } from '../constants/theme';
 import { t, LanguageCode, LANGUAGES } from '../utils/i18n';
 import TranslatedText from './TranslatedText';
@@ -20,6 +21,25 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
   const handleLangSelect = (code: string) => {
     dispatch(setLanguage(code));
     onDismiss();
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      t('logout' as any, lang) || 'Log Out',
+      t('resetAppConfirm' as any, lang) || 'Are you sure you want to log out and reset all progress?',
+      [
+        { text: t('cancel' as any, lang) || 'Cancel', style: 'cancel' },
+        { 
+          text: t('logout' as any, lang) || 'Log Out', 
+          style: 'destructive',
+          onPress: () => {
+            dispatch(resetSimulation());
+            dispatch(resetUser());
+            onDismiss();
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -40,6 +60,11 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
               </TouchableOpacity>
             ))}
           </View>
+
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Feather name="log-out" size={20} color={Colors.sakhi.coral} style={{marginRight: 8}} />
+            <Text style={styles.logoutBtnText}>{t('logout' as any, lang) || 'Log Out / Reset App'}</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.closeBtn} onPress={onDismiss}>
             <TranslatedText text='Close' lang={lang} style={styles.closeBtnText} />
@@ -100,6 +125,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: Colors.neutral.darkGray,
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    backgroundColor: '#FEE2E2', // Light red background
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  logoutBtnText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.sakhi.coral,
   },
   closeBtn: {
     backgroundColor: Colors.neutral.lightGray,
