@@ -50,25 +50,25 @@ export default function MonthEndReportModal({ visible, onDismiss }: MonthEndRepo
       <View style={styles.overlay}>
         <View style={styles.modalCard}>
           <TouchableOpacity style={styles.audioBtn} onPress={playAudio}>
-            <Feather name='volume-2' size={24} color={Colors.neutral.darkGray} />
+            <Feather name='volume-2' size={24} color={Colors.sakhi.goldLight} />
           </TouchableOpacity>
 
-          <Feather name='calendar' size={48} color={Colors.sakhi.darker} style={{ marginBottom: 16 }} />
+          <Feather name='calendar' size={48} color={Colors.sakhi.goldLight} style={{ marginBottom: 16 }} />
           <TranslatedText text="Month Complete!" lang={lang} style={styles.title} />
           <TranslatedText text='End of Month Report' lang={lang} style={styles.subtitle} />
 
           <View style={styles.statsBox}>
             <View style={styles.statRow}>
               <TranslatedText text='Total Saved' lang={lang} style={styles.statLabel} />
-              <Text style={styles.statValue}>₹{sim.jars.savings}</Text>
+              <Text style={styles.statValue}>₹{sim.jars?.savings || 0}</Text>
             </View>
             <View style={styles.statRow}>
               <TranslatedText text='Missions Completed' lang={lang} style={styles.statLabel} />
-              <Text style={styles.statValue}>{sim.completedScenarios.length}</Text>
+              <Text style={styles.statValue}>{sim.completedScenarios?.length || 0}</Text>
             </View>
             <View style={styles.statRow}>
               <TranslatedText text='Scams Defeated' lang={lang} style={styles.statLabel} />
-              <Text style={styles.statValue}>{sim.completedFraudCases.length}</Text>
+              <Text style={styles.statValue}>{sim.completedFraudCases?.length || 0}</Text>
             </View>
           </View>
 
@@ -89,20 +89,22 @@ export default function MonthEndReportModal({ visible, onDismiss }: MonthEndRepo
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.75)',
     justifyContent: 'center',
     padding: 20,
   },
   modalCard: {
-    backgroundColor: Colors.neutral.white,
+    backgroundColor: Colors.sakhi.navy,
     borderRadius: 24,
     padding: 30,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldLight,
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
     shadowRadius: 20,
-    elevation: 10,
+    elevation: 12,
   },
   audioBtn: {
     position: 'absolute',
@@ -114,25 +116,28 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: Colors.sakhi.darker,
+    color: Colors.sakhi.goldLight,
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.neutral.gray,
+    color: '#8899AA',
     fontWeight: '700',
     marginBottom: 24,
   },
   statsBox: {
     width: '100%',
-    backgroundColor: Colors.neutral.offWhite,
+    backgroundColor: 'rgba(255,215,0,0.08)',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: Colors.neutral.lightGray,
+    borderWidth: 1.5,
+    borderColor: Colors.sakhi.goldDark + '40',
   },
   statRow: {
     flexDirection: 'row',
@@ -141,47 +146,49 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 15,
-    color: Colors.neutral.darkGray,
+    color: '#B0BEC5',
     fontWeight: '600',
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '800',
-    color: Colors.sakhi.green,
+    fontWeight: '900',
+    color: Colors.sakhi.goldLight,
   },
   rewardsBox: {
-    backgroundColor: Colors.sakhi.gold + '20',
+    backgroundColor: Colors.sakhi.goldLight + '20',
     width: '100%',
-    padding: 16,
+    padding: 18,
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: Colors.sakhi.gold + '50',
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldDark,
   },
   rewardsTitle: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#D97706',
+    fontWeight: '900',
+    color: Colors.sakhi.goldLight,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     marginBottom: 8,
   },
   rewardText: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#D97706',
+    color: Colors.sakhi.goldLight,
   },
   claimBtn: {
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: Colors.sakhi.goldLight,
     borderRadius: 16,
     paddingVertical: 16,
     width: '100%',
     alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: Colors.sakhi.goldDark,
   },
   claimText: {
-    color: Colors.neutral.white,
+    color: '#1A1A2E',
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
   },
 });

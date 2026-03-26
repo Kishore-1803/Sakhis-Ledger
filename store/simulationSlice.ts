@@ -23,6 +23,10 @@ interface SimulationSliceState {
   // Game Content
   activeScams: any[];
   activeScenarios: any[];
+
+  // Last life-event financial breakdown (for modal display)
+  lastEventJarDeducted: number;
+  lastEventBalanceDeducted: number;
 }
 
 const initialState: SimulationSliceState = {
@@ -42,6 +46,8 @@ const initialState: SimulationSliceState = {
   lastMonthReportShown: 0,
   activeScams: [],
   activeScenarios: [],
+  lastEventJarDeducted: 0,
+  lastEventBalanceDeducted: 0,
 };
 
 const simulationSlice = createSlice({
@@ -64,9 +70,28 @@ const simulationSlice = createSlice({
     },
     applyLifeEvent(state, action: PayloadAction<{ jar: keyof JarState; amount: number; eventId: string }>) {
       const { jar, amount, eventId } = action.payload;
-      state.jars[jar] = Math.max(0, state.jars[jar] + amount);
+
+      if (amount < 0) {
+        // Negative = expense. Drain the jar first, spill remainder from balance.
+        const needed = Math.abs(amount);
+        const fromJar = Math.min(needed, state.jars[jar]);     // take what the jar has
+        const fromBalance = needed - fromJar;                   // balance pays the rest
+
+        state.jars[jar] = Math.max(0, state.jars[jar] - fromJar);
+        state.balance   = Math.max(0, state.balance - fromBalance);
+
+        // Store breakdown for modal display
+        state.lastEventJarDeducted     = fromJar;
+        state.lastEventBalanceDeducted = fromBalance;
+      } else {
+        // Positive = windfall (subsidy, bonus). Add directly to jar.
+        state.jars[jar] += amount;
+        state.lastEventJarDeducted     = 0;
+        state.lastEventBalanceDeducted = 0;
+      }
+
       state.lifeEventActive = true;
-      state.lastLifeEvent = eventId;
+      state.lastLifeEvent   = eventId;
     },
     dismissLifeEvent(state) {
       state.lifeEventActive = false;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -9,6 +9,8 @@ import { Colors } from '../constants/theme';
 import { t, LanguageCode } from '../utils/i18n';
 import { TranslatedText } from '../components/TranslatedText';
 import { useDynamicTranslation } from '../utils/translate';
+
+import { useTheme } from '../utils/useTheme';
 
 interface ScenariosScreenProps {
   navigation: any;
@@ -24,7 +26,7 @@ function TranslatedScenarioCard({ scenario, sim, navigation, lang }: any) {
     <ScenarioCard
       title={title}
       category={scenario.category}
-      completed={sim.completedScenarios.includes(scenario.id)}
+      completed={(sim.completedScenarios || []).includes(scenario.id)}
       xpReward={maxReward || 100}
       onPress={() => navigation.navigate('ScenarioDetail', { scenarioId: scenario.id })}
     />
@@ -35,12 +37,13 @@ export default function ScenariosScreen({ navigation }: ScenariosScreenProps) {
   const sim = useSelector((state: RootState) => state.simulation);
   const user = useSelector((state: RootState) => state.user);
   const lang = user.language as LanguageCode;
+  const theme = useTheme();
 
   // Rule-based engine: Load dynamically generated content based on level
   const availableScenarios = React.useMemo(() => {
     return (sim.activeScenarios || []).filter((scenario: any) => {
       // Don't show completed ones
-      if (sim.completedScenarios.includes(scenario.id)) return false;
+        if ((sim.completedScenarios || []).includes(scenario.id)) return false;
 
       // Determine implicit difficulty by maximum XP reward provided in the scenario.
       const maxReward = scenario.choices.reduce((max: number, choice: any) => {
@@ -58,7 +61,7 @@ export default function ScenariosScreen({ navigation }: ScenariosScreenProps) {
   }, [sim.completedScenarios, user.level, sim.finHealthScore, sim.activeScenarios]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <GlobalHeader title={t('quests', lang)} audioText={t('quests', lang) + '. Complete these scenarios to earn XP.'} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -66,7 +69,7 @@ export default function ScenariosScreen({ navigation }: ScenariosScreenProps) {
         <View style={styles.progressBox}>
           <TranslatedText style={styles.progressLabel}>dailyProgress</TranslatedText>
           <Text style={styles.progressText}>
-            {sim.completedScenarios.length} Total
+            {sim.completedScenarios?.length || 0} Total
           </Text>
           <View style={styles.progressBar}>
             <View
@@ -106,51 +109,54 @@ export default function ScenariosScreen({ navigation }: ScenariosScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.neutral.offWhite,
   },
   scroll: {
     padding: 20,
     paddingBottom: 100,
   },
   progressBox: {
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: '#218C53',
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldDark,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   progressLabel: {
-    color: Colors.neutral.white,
-    fontWeight: '600',
+    color: Colors.sakhi.goldLight,
+    fontWeight: '700',
     fontSize: 14,
-    opacity: 0.9,
   },
   progressText: {
-    fontSize: 24,
-    color: Colors.sakhi.gold,
-    fontWeight: '800',
+    fontSize: 26,
+    color: Colors.sakhi.goldLight,
+    fontWeight: '900',
     marginBottom: 8,
     marginTop: 2,
   },
   progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 5,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.sakhi.goldDark,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.sakhi.gold,
+    backgroundColor: Colors.sakhi.goldLight,
     borderRadius: 4,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: Colors.neutral.darkGray,
     marginBottom: 16,
+    letterSpacing: 0.5,
   },
 });

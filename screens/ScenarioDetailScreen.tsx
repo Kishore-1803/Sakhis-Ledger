@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Animated, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { completeScenario } from '../store/simulationSlice';
-import { addXP, incrementStreak } from '../store/userSlice';
+import { addXP, incrementStreak, completeDailyMission } from '../store/userSlice';
 import { behavioralLogger } from '../engine/behavioralLogger';
 import { Colors } from '../constants/theme';
+import { useTheme } from '../utils/useTheme';
 import { AudioEngine } from '../utils/audioEngine';
 import { t, LanguageCode } from '../utils/i18n';
 import TranslatedText from '../components/TranslatedText';
@@ -23,8 +24,9 @@ interface ScenarioDetailScreenProps {
 export default function ScenarioDetailScreen({ route, navigation }: ScenarioDetailScreenProps) {
   const dispatch = useDispatch();
   const sim = useSelector((state: RootState) => state.simulation);
-  const { language } = useSelector((state: RootState) => state.user);
+  const { language, dailyMissionsCompleted, dailyDeadline } = useSelector((state: RootState) => state.user);
   const lang = language as string;
+  const theme = useTheme();
 
   const { scenarioId } = route.params;
   const scenario = (sim.activeScenarios || []).find((s: any) => s.id === scenarioId) as any;
@@ -43,7 +45,7 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
     );
   }
 
-  const isCompleted = sim.completedScenarios.includes(scenario.id);
+  const isCompleted = (sim.completedScenarios || []).includes(scenario.id);
 
   const handleChoice = (choice: any) => {
     setSelectedChoice(choice);
@@ -52,11 +54,11 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
     behavioralLogger.log('choice_made', { scenarioId, choiceId: choice.id });
     if (choice.isOptimal) {
       behavioralLogger.log('optimal_choice', { scenarioId, choiceId: choice.id });
-      dispatch(incrementStreak());
+      // Note: streak is day-based; it increments in setDailyDeadline on new-day opens,
+      // NOT on each optimal choice (that would inflate it and award badges incorrectly).
     }
 
     const xp = choice.impact.xpReward || 50;
-    
     dispatch(addXP(xp));
     dispatch(
       completeScenario({
@@ -65,6 +67,19 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
         finHealthDelta: choice.impact.finHealth || 0,
       })
     );
+
+    // Mark 'quest' mission done only when ALL active scenarios are completed
+    const updatedCompleted = [...(sim.completedScenarios || []), scenario.id];
+    const allScenariosDone =
+      (sim.activeScenarios || []).length > 0 &&
+      (sim.activeScenarios || []).every((s: any) => updatedCompleted.includes(s.id));
+
+    if (allScenariosDone && !dailyMissionsCompleted.includes('quest')) {
+      const isOnTime = dailyDeadline > 0 && Date.now() < dailyDeadline;
+      const questBonus = isOnTime ? 50 : Math.floor(50 * 0.3);
+      dispatch(addXP(questBonus));
+      dispatch(completeDailyMission('quest'));
+    }
   };
 
   const playAudio = () => {
@@ -72,15 +87,15 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Top Header Match iOS Style */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Feather name="arrow-left" size={20} color={Colors.neutral.white} style={{ marginRight: 6 }} />
+          <Feather name="arrow-left" size={20} color={Colors.sakhi.goldLight} style={{ marginRight: 6 }} />
           <Text style={styles.backBtnText}>Back</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={playAudio}>
-          <Feather name="volume-2" size={24} color={Colors.neutral.white} />
+          <Feather name="volume-2" size={24} color={Colors.sakhi.goldLight} />
         </TouchableOpacity>
       </View>
 
@@ -95,19 +110,15 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
         {/* Choices */}
         {!showResult && !isCompleted && (
           <View>
-            <Text style={styles.choicePrompt}>{t('whatWillYouDo', lang)}</Text>
+            <Text style={[styles.choicePrompt, { color: theme.text }]}>{t('whatWillYouDo', lang)}</Text>
             {scenario.choices.map((choice: any) => (
-              <TouchableOpacity
+              <AnimatedChoiceCard
                 key={choice.id}
-                style={styles.choiceCard}
+                choice={choice}
+                lang={lang}
+                theme={theme}
                 onPress={() => handleChoice(choice)}
-                activeOpacity={0.7}
-              >
-                <TranslatedText text={choice.text} lang={lang} style={styles.choiceText} />
-                <View style={styles.choiceRight}>
-                   <Feather name="arrow-right" size={20} color={Colors.sakhi.green} />
-                </View>
-              </TouchableOpacity>
+              />
             ))}
           </View>
         )}
@@ -172,26 +183,58 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
   );
 }
 
+function AnimatedChoiceCard({ choice, lang, theme, onPress }: any) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const borderColor = useRef(new Animated.Value(0)).current;
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scale, { toValue: 0.96, duration: 80, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(scale, { toValue: 1, useNativeDriver: Platform.OS !== 'web', bounciness: 14, speed: 16 }),
+    ]).start();
+    onPress();
+  };
+
+  return (
+    <TouchableOpacity onPress={handlePress} activeOpacity={1}>
+      <Animated.View
+        style={[
+          styles.choiceCard,
+          {
+            backgroundColor: theme.card,
+            borderColor: theme.border,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        <TranslatedText text={choice.text} lang={lang} style={[styles.choiceText, { color: theme.text }]} />
+        <View style={styles.choiceRight}>
+          <Feather name="arrow-right" size={20} color={Colors.sakhi.goldLight} />
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.neutral.offWhite,
   },
   topBar: {
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: '#218C53',
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.sakhi.goldLight,
   },
   backBtnText: {
-    color: Colors.neutral.white,
+    color: Colors.sakhi.goldLight,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   audioIcon: {
     fontSize: 24,
@@ -201,25 +244,26 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   headerCard: {
-    backgroundColor: Colors.neutral.white,
     borderRadius: 20,
     padding: 24,
     marginBottom: 24,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.sakhi.goldLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
-    color: Colors.neutral.darkGray,
+    fontWeight: '900',
+    color: Colors.sakhi.goldDark,
     marginBottom: 12,
   },
   divider: {
-    height: 1,
-    backgroundColor: Colors.neutral.lightGray,
+    height: 2,
+    backgroundColor: Colors.sakhi.goldDark + '30',
     marginBottom: 16,
   },
   narrative: {
@@ -229,31 +273,31 @@ const styles = StyleSheet.create({
   },
   choicePrompt: {
     fontSize: 18,
-    fontWeight: '800',
-    color: Colors.neutral.darkGray,
+    fontWeight: '900',
     marginBottom: 14,
   },
   choiceCard: {
-    backgroundColor: Colors.neutral.white,
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1.5,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.sakhi.goldLight,
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
   },
   choiceText: {
     flex: 1,
     fontSize: 15,
-    color: Colors.neutral.darkGray,
     lineHeight: 22,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   choiceRight: {
     marginLeft: 12,
@@ -268,8 +312,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.sakhi.green + '30',
+    borderWidth: 2,
+    borderColor: Colors.sakhi.green + '40',
   },
   completedEmoji: {
     fontSize: 40,
@@ -277,7 +321,7 @@ const styles = StyleSheet.create({
   },
   completedTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: Colors.sakhi.green,
     marginBottom: 4,
   },
@@ -294,75 +338,84 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'flex-end',
   },
   resultModal: {
-    backgroundColor: Colors.neutral.white,
+    backgroundColor: Colors.sakhi.navy,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     padding: 32,
     alignItems: 'center',
+    borderTopWidth: 3,
+    borderTopColor: Colors.sakhi.goldLight,
   },
   resultEmoji: {
     fontSize: 60,
     marginBottom: 12,
   },
   resultTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '900',
-    color: Colors.neutral.black,
+    color: Colors.sakhi.goldLight,
     marginBottom: 12,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   resultFeedback: {
     fontSize: 16,
-    color: Colors.neutral.darkGray,
+    color: '#B0BEC5',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
   },
   rewardsBox: {
     flexDirection: 'row',
-    backgroundColor: Colors.neutral.offWhite,
+    backgroundColor: 'rgba(255,215,0,0.1)',
     borderRadius: 16,
     width: '100%',
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
-    borderWidth: 1,
-    borderColor: Colors.sakhi.green + '30',
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldDark,
   },
   rewardItem: {
     alignItems: 'center',
     flex: 1,
   },
   rewardVal: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '900',
-    color: Colors.sakhi.green,
+    color: Colors.sakhi.goldLight,
   },
   rewardLbl: {
     fontSize: 12,
-    color: Colors.neutral.gray,
+    color: '#8899AA',
     fontWeight: '700',
     marginTop: 4,
   },
   rewardDivider: {
-    width: 1,
+    width: 2,
     height: 40,
-    backgroundColor: Colors.neutral.lightGray,
+    backgroundColor: Colors.sakhi.goldDark,
   },
   doneBtn: {
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: Colors.sakhi.goldLight,
     borderRadius: 16,
     paddingVertical: 16,
     width: '100%',
     alignItems: 'center',
+    borderBottomWidth: 4,
+    borderBottomColor: Colors.sakhi.goldDark,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   doneBtnText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.neutral.white,
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#1A1A2E',
   },
 });
