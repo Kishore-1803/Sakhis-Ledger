@@ -166,7 +166,6 @@ function AppNavigator() {
   }, [hasOnboarded]); // Only check once per mount
 
   // ── Badge unlock watcher ────────────────────────────────────────────────
-<<<<<<< HEAD
   const completedScenarios = useSelector((state: RootState) => state.simulation.completedScenarios) || [];
   const completedFraudCases = useSelector((state: RootState) => state.simulation.completedFraudCases) || [];
   const savings = useSelector((state: RootState) => state.simulation.jars?.savings) || 0;
@@ -174,15 +173,6 @@ function AppNavigator() {
   const userStreak = useSelector((state: RootState) => state.user.streak) || 0;
   const dailyMissionsCompleted = useSelector((state: RootState) => state.user.dailyMissionsCompleted) || [];
   const dailyDeadline = useSelector((state: RootState) => state.user.dailyDeadline) ?? 0;
-=======
-  const completedScenarios = useSelector((state: RootState) => state.simulation.completedScenarios);
-  const completedFraudCases = useSelector((state: RootState) => state.simulation.completedFraudCases);
-  const savings = useSelector((state: RootState) => state.simulation.jars.savings);
-  const userLevel = useSelector((state: RootState) => state.user.level);
-  const userStreak = useSelector((state: RootState) => state.user.streak);
-  const dailyMissionsCompleted: string[] = useSelector((state: RootState) => state.user.dailyMissionsCompleted ?? []);
-  const dailyDeadline = useSelector((state: RootState) => state.user.dailyDeadline ?? 0);
->>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
 
   useEffect(() => {
     if (!hasOnboarded) return;
