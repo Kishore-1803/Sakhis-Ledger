@@ -13,6 +13,15 @@ export const BADGE_META: Record<BadgeId, { label: string; icon: string; desc: st
   daily_hero:   { label: 'Daily Hero',    icon: '⚡',  desc: 'Completed all daily missions on time' },
 };
 
+import { MistakeRecord } from '../engine/adaptiveEngine';
+
+export interface PerformanceHistory {
+  date: string;
+  accuracyAvg: number;
+  timeAvgSec: number;
+  jarsEarned: number;
+}
+
 interface UserState {
   name: string;
   hasOnboarded: boolean;
@@ -28,11 +37,17 @@ interface UserState {
   trophies: number;
   badges: BadgeId[];
 
+  // Antigravity Core
+  totalJars: number;
+  mistakes: Record<string, MistakeRecord>;
+  performanceHistory: PerformanceHistory[];
+
   // ── Daily Timed Session ────────────────────────────────────────────────────
   lastSessionDate: string;    // ISO date string e.g. '2026-03-25'
   dailyDeadline: number;      // Unix epoch (ms) when today's mission window expires
   dailyMissionsCompleted: string[]; // IDs of missions completed today
   dailyRewardClaimed: boolean; // Has the end-of-day bonus been claimed today
+  jarsEarnedToday: number;
 }
 
 const initialState: UserState = {
@@ -49,10 +64,15 @@ const initialState: UserState = {
   trophies: 0,
   badges: [],
 
+  totalJars: 0,
+  mistakes: {},
+  performanceHistory: [],
+
   lastSessionDate: '',
   dailyDeadline: 0,
   dailyMissionsCompleted: [],
   dailyRewardClaimed: false,
+  jarsEarnedToday: 0,
 };
 
 const userSlice = createSlice({
@@ -135,15 +155,30 @@ const userSlice = createSlice({
       }
     },
 
-    /**
-     * Claim the end-of-day celebration reward.
-     * Gives +1 Trophy. The +100 XP bonus is dispatched separately via addXP
-     * so that leveling logic stays centralised.
-     */
     claimDailyReward(state) {
       if (!state.dailyRewardClaimed) {
         state.dailyRewardClaimed = true;
         state.trophies = (state.trophies ?? 0) + 1;
+      }
+    },
+
+    // ── Antigravity Update Reducers ──────────────────────────────────────────
+    applyAntigravityResults(state, action: PayloadAction<{ jarsEarned: number, updatedMistakes: Record<string, MistakeRecord> }>) {
+      const { jarsEarned, updatedMistakes } = action.payload;
+      state.totalJars += jarsEarned;
+      state.jarsEarnedToday += jarsEarned;
+      state.mistakes = updatedMistakes;
+    },
+
+    archiveDailyPerformance(state, action: PayloadAction<{ accuracyAvg: number, timeAvgSec: number }>) {
+      if (state.lastSessionDate && state.jarsEarnedToday > 0) {
+        state.performanceHistory.push({
+          date: state.lastSessionDate,
+          accuracyAvg: action.payload.accuracyAvg,
+          timeAvgSec: action.payload.timeAvgSec,
+          jarsEarned: state.jarsEarnedToday
+        });
+        state.jarsEarnedToday = 0;
       }
     },
 
@@ -164,6 +199,7 @@ export const {
   setUserName, completeOnboarding, setLanguage, setGuide,
   setAvatar, addXP, addTrophy, incrementStreak, toggleDarkMode,
   setDailyDeadline, completeDailyMission, claimDailyReward, unlockBadge,
+  applyAntigravityResults, archiveDailyPerformance,
   resetUser,
 } = userSlice.actions;
 
