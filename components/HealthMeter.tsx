@@ -17,6 +17,17 @@ export default function HealthMeter({ score, size = 140 }: HealthMeterProps) {
   return (
     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
       <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+        {/* Gold outer ring */}
+        <View
+          style={{
+            position: 'absolute',
+            width: size - 8,
+            height: size - 8,
+            borderRadius: (size - 8) / 2,
+            borderWidth: 2,
+            borderColor: Colors.sakhi.goldDark + '50',
+          }}
+        />
         {/* Background circle */}
         <View
           style={{
@@ -25,7 +36,7 @@ export default function HealthMeter({ score, size = 140 }: HealthMeterProps) {
             height: size - 16,
             borderRadius: (size - 16) / 2,
             borderWidth: 10,
-            borderColor: Colors.neutral.lightGray,
+            borderColor: Colors.sakhi.goldDark + '20',
           }}
         />
         {/* Progress circle */}
@@ -46,14 +57,21 @@ export default function HealthMeter({ score, size = 140 }: HealthMeterProps) {
           }}
         />
         {/* Score text */}
-        <Text style={{ fontSize: size * 0.25, fontWeight: '800', color: config.color }}>
+        <Text style={{
+          fontSize: size * 0.25,
+          fontWeight: '900',
+          color: Colors.sakhi.goldLight,
+          textShadowColor: 'rgba(0,0,0,0.2)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 3,
+        }}>
           {score}
         </Text>
-        <Text style={{ fontSize: size * 0.09, color: Colors.neutral.darkGray, fontWeight: '600' }}>
+        <Text style={{ fontSize: size * 0.09, color: Colors.sakhi.goldDark, fontWeight: '800', letterSpacing: 1 }}>
           FIN-HEALTH
         </Text>
       </View>
-      <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '700', color: config.color }}>
+      <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '800', color: config.color }}>
         {config.label}
       </Text>
     </View>

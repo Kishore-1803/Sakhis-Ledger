@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StatusBar } from 'react-native';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef, CommonActions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { store, persistor, RootState } from './store/store';
 import { setLastActiveDate, setActiveContent } from './store/simulationSlice';
+import { setDailyDeadline, unlockBadge } from './store/userSlice';
 import { isEndOfMonth } from './engine/simulationEngine';
 import { generateDynamicFraudCases, generateDynamicScenarios } from './engine/contentGenerator';
+import { useTheme } from './utils/useTheme';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TranslatedText from './components/TranslatedText';
+
+// A ref to the NavigationContainer so we can imperatively reset navigation on logout
+const navigationRef = createNavigationContainerRef();
 
 import HomeScreen from './screens/HomeScreen';
 import ScenariosScreen from './screens/ScenariosScreen';
@@ -26,28 +31,31 @@ const Stack = createNativeStackNavigator();
 
 function TabNavigator() {
   const lang = useSelector((state: RootState) => state.user.language || 'en');
+  const theme = useTheme();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#f1f1f1',
-          height: 65,
-          paddingBottom: 8,
-          paddingTop: 8,
-          elevation: 10,
+          backgroundColor: theme.tabBg,
+          borderTopWidth: 2,
+          borderTopColor: '#FFD70040',
+          height: 72,
+          paddingBottom: 10,
+          paddingTop: 10,
+          elevation: 16,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 12,
         },
-        tabBarActiveTintColor: '#059669', // Colors.sakhi.green
-        tabBarInactiveTintColor: '#9CA3AF', // Colors.neutral.gray
+        tabBarActiveTintColor: theme.tabActive,
+        tabBarInactiveTintColor: theme.tabInactive,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
+          fontSize: 10,
+          fontWeight: '900',
+          letterSpacing: 0.5,
         },
         tabBarLabel: ({ focused, color }) => {
           let label = route.name;
@@ -55,7 +63,7 @@ function TabNavigator() {
           if (route.name === 'Quests') label = 'Quests';
           if (route.name === 'Jars') label = 'Jars';
           if (route.name === 'Arena') label = 'Arena';
-          return <TranslatedText text={label} lang={lang} style={{ color, fontSize: 11, fontWeight: '700' }} />;
+          return <TranslatedText text={label} lang={lang} style={{ color, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 }} />;
         }
       })}
     >
@@ -100,8 +108,20 @@ function TabNavigator() {
 }
 
 function TabIcon({ name, focused }: { name: any; focused: boolean }) {
+  const theme = useTheme();
   return (
-    <Feather name={name} size={focused ? 24 : 20} color={focused ? '#059669' : '#9CA3AF'} />
+    <View style={{
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: focused ? '#FFD70025' : 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: focused ? 1.5 : 0,
+      borderColor: '#FFD70050',
+    }}>
+      <Feather name={name} size={focused ? 24 : 20} color={focused ? theme.tabActive : theme.tabInactive} />
+    </View>
   );
 }
 
@@ -110,18 +130,64 @@ function AppNavigator() {
   const hasOnboarded = useSelector((state: RootState) => state.user.hasOnboarded);
   const sim = useSelector((state: RootState) => state.simulation);
   
-  const [showOnboarding, setShowOnboarding] = useState(!hasOnboarded);
   const [showMonthEnd, setShowMonthEnd] = useState(false);
+  // Track previous value so we only react when it actually flips to false
+  const prevHasOnboarded = useRef(hasOnboarded);
 
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-  };
+  const handleOnboardingComplete = () => {};
 
+  // ── Logout navigation: when hasOnboarded flips false, hard-reset the stack ──
   useEffect(() => {
-    setShowOnboarding(!hasOnboarded);
+    if (prevHasOnboarded.current === true && !hasOnboarded) {
+      // State has changed from logged-in → logged-out.
+      // Imperatively reset the navigation stack to Onboarding.
+      if (navigationRef.isReady()) {
+        navigationRef.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'Onboarding' }],
+          })
+        );
+      }
+    }
+    prevHasOnboarded.current = hasOnboarded;
   }, [hasOnboarded]);
 
-  // Time-Based Progression Engine Check
+  // ── Daily session window init ───────────────────────────────────────────────
+  const lastSessionDate = useSelector((state: RootState) => state.user.lastSessionDate);
+  useEffect(() => {
+    if (!hasOnboarded) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (lastSessionDate !== todayStr) {
+      // New day: set a 4-hour window from now
+      const deadline = Date.now() + 4 * 60 * 60 * 1000;
+      dispatch(setDailyDeadline({ dateStr: todayStr, deadline }));
+    }
+  }, [hasOnboarded]); // Only check once per mount
+
+  // ── Badge unlock watcher ────────────────────────────────────────────────
+  const completedScenarios = useSelector((state: RootState) => state.simulation.completedScenarios);
+  const completedFraudCases = useSelector((state: RootState) => state.simulation.completedFraudCases);
+  const savings = useSelector((state: RootState) => state.simulation.jars.savings);
+  const userLevel = useSelector((state: RootState) => state.user.level);
+  const userStreak = useSelector((state: RootState) => state.user.streak);
+  const dailyMissionsCompleted: string[] = useSelector((state: RootState) => state.user.dailyMissionsCompleted ?? []);
+  const dailyDeadline = useSelector((state: RootState) => state.user.dailyDeadline ?? 0);
+
+  useEffect(() => {
+    if (!hasOnboarded) return;
+    if (completedScenarios.length >= 1) dispatch(unlockBadge('first_quest'));
+    if (completedFraudCases.length >= 5) dispatch(unlockBadge('scam_buster'));
+    if (savings >= 5000)                 dispatch(unlockBadge('saver'));
+    if (userStreak >= 3)                 dispatch(unlockBadge('streak_3'));
+    if (userStreak >= 7)                 dispatch(unlockBadge('streak_7'));
+    if (userLevel >= 5)                  dispatch(unlockBadge('level_5'));
+    // daily_hero: all 4 missions done on time
+    const isOnTime = dailyDeadline > 0 && Date.now() < dailyDeadline;
+    if (dailyMissionsCompleted.length >= 4 && isOnTime) dispatch(unlockBadge('daily_hero'));
+  }, [completedScenarios, completedFraudCases, savings, userStreak, userLevel, dailyMissionsCompleted]);
+
+  // Run once on mount/onboarding to avoid infinite loops with state updates
   useEffect(() => {
     if (!hasOnboarded) return;
     
@@ -134,9 +200,9 @@ function AppNavigator() {
 
     if (isNewDay || needsContent) {
       // Daily generation: 5 new dynamic cases based on current level!
-      const userLevel = store.getState().user.level;
-      const newScams = generateDynamicFraudCases(userLevel, 5);
-      const newScenarios = generateDynamicScenarios(userLevel, 5);
+      const curLevel = store.getState().user.level;
+      const newScams = generateDynamicFraudCases(curLevel, 5);
+      const newScenarios = generateDynamicScenarios(curLevel, 5);
       dispatch(setActiveContent({ scams: newScams, scenarios: newScenarios }));
       dispatch(setLastActiveDate(Date.now()));
     }
@@ -145,22 +211,25 @@ function AppNavigator() {
     if (isEndOfMonth() && sim.lastMonthReportShown < sim.month) {
       setShowMonthEnd(true);
     }
-  }, [hasOnboarded]); // Run once on mount/onboarding to avoid infinite loops with state updates
+  }, [hasOnboarded]); // Run once on mount/onboarding to avoid infinite loops
 
   return (
     <>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator key={hasOnboarded ? 'app' : 'auth'} screenOptions={{ headerShown: false }}>
         {!hasOnboarded ? (
           <Stack.Screen name="Onboarding">
             {(props) => <OnboardingScreen {...props} onComplete={handleOnboardingComplete} />}
           </Stack.Screen>
-        ) : null}
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
-        <Stack.Screen
-          name="ScenarioDetail"
-          component={ScenarioDetailScreen}
-          options={{ animation: 'slide_from_right' }}
-        />
+        ) : (
+          <>
+            <Stack.Screen name="MainTabs" component={TabNavigator} />
+            <Stack.Screen
+              name="ScenarioDetail"
+              component={ScenarioDetailScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+          </>
+        )}
       </Stack.Navigator>
       
       {/* Global Modals */}
@@ -176,11 +245,20 @@ export default function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <NavigationContainer>
-          <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-          <AppNavigator />
+        <NavigationContainer ref={navigationRef}>
+          <AppNavigatorWithStatusBar />
         </NavigationContainer>
       </PersistGate>
     </Provider>
+  );
+}
+
+function AppNavigatorWithStatusBar() {
+  const theme = useTheme();
+  return (
+    <>
+      <StatusBar barStyle={theme.statusBar} backgroundColor={theme.bg} />
+      <AppNavigator />
+    </>
   );
 }

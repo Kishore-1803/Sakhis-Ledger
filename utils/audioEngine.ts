@@ -35,6 +35,7 @@ export const AudioEngine = {
       }
 
       Speech.speak(finalText, {
+        language: language, // BCP-47 tag e.g. 'hi-IN', 'ta-IN'
         pitch: 1.0,
         rate: 0.9, // Slightly slower for clarity
         onError: (err) => console.log('Speech error:', err),

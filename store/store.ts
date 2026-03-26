@@ -8,6 +8,23 @@ const persistConfig = {
   key: 'sakhi-ledger-root',
   storage: AsyncStorage,
   whitelist: ['user', 'simulation'],
+  // Fix for string-to-boolean casting issues
+  transforms: [
+    {
+      in: (state: any) => state, // when saving to storage
+      out: (state: any) => {
+        // when loading from storage, convert string booleans to actual booleans
+        if (state && state.user) {
+          state.user.isDarkMode = state.user.isDarkMode === true || state.user.isDarkMode === 'true';
+          state.user.hasOnboarded = state.user.hasOnboarded === true || state.user.hasOnboarded === 'true';
+        }
+        if (state && state.simulation) {
+          state.simulation.lifeEventActive = state.simulation.lifeEventActive === true || state.simulation.lifeEventActive === 'true';
+        }
+        return state;
+      },
+    },
+  ],
 };
 
 const rootReducer = combineReducers({
@@ -22,7 +39,15 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: [
+          'persist/PERSIST',
+          'persist/REHYDRATE',
+          'persist/FLUSH',
+          'persist/PURGE',
+          'persist/PAUSE',
+          'persist/REGISTER',
+        ],
+        ignoredActionPaths: ['result', 'register', 'payload.result'],
       },
     }),
 });

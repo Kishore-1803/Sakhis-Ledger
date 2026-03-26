@@ -1,0 +1,12 @@
+{
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.disableAutomaticTypeAcquisition": false,
+  "search.exclude": {
+    "**/node_modules": true
+  },
+  "files.exclude": {
+    "**/node_modules": false
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

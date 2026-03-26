@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { allocateToJar, removeFromJar, advanceMonth } from '../store/simulationSlice';
-import { addXP } from '../store/userSlice';
+import { addXP, completeDailyMission } from '../store/userSlice';
 import JarCard from '../components/JarCard';
 import GlobalHeader from '../components/GlobalHeader';
 import { Colors, MONTHLY_INCOME } from '../constants/theme';
+import { useTheme } from '../utils/useTheme';
 import { JarState } from '../engine/simulationEngine';
 import { TranslatedText } from '../components/TranslatedText';
 import { t, LanguageCode } from '../utils/i18n';
@@ -17,6 +18,8 @@ export default function JarsScreen({ navigation }: any) {
   const dispatch = useDispatch();
   const sim = useSelector((state: RootState) => state.simulation);
   const lang = useSelector((state: RootState) => state.user.language as LanguageCode);
+  const { dailyMissionsCompleted, dailyDeadline } = useSelector((state: RootState) => state.user);
+  const theme = useTheme();
   const [selectedJar, setSelectedJar] = useState<keyof JarState | null>(null);
   const [amount, setAmount] = useState('');
 
@@ -35,7 +38,15 @@ export default function JarsScreen({ navigation }: any) {
     }
     dispatch(allocateToJar({ jar: selectedJar, amount: value }));
     setAmount('');
-    dispatch(addXP(5)); // Award XP for allocating funds
+    dispatch(addXP(5)); // XP for each allocation
+
+    // Mark 'jars' daily mission done on first allocation today
+    if (!(dailyMissionsCompleted ?? []).includes('jars')) {
+      const isOnTime = (dailyDeadline ?? 0) > 0 && Date.now() < (dailyDeadline ?? 0);
+      const jarsBonus = isOnTime ? 30 : Math.floor(30 * 0.3);
+      dispatch(addXP(jarsBonus));
+      dispatch(completeDailyMission('jars'));
+    }
   };
 
   const handleRemove = () => {
@@ -55,12 +66,12 @@ export default function JarsScreen({ navigation }: any) {
   const jarNames: (keyof JarState)[] = ['household', 'children', 'savings', 'emergency'];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <GlobalHeader title={t('yourJars', lang)} audioText={t('yourJars', lang)} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Balance bar */}
-        <View style={styles.balanceCard}>
+        <View style={[styles.balanceCard, { backgroundColor: theme.card }]}>
           <TranslatedText style={styles.balanceLabel}>availableToAllocate</TranslatedText>
           <Text style={styles.balanceAmount}>₹{sim.balance.toLocaleString('en-IN')}</Text>
         </View>
@@ -90,7 +101,7 @@ export default function JarsScreen({ navigation }: any) {
 
         {/* Allocation Controls */}
         {selectedJar && (
-          <View style={styles.actionCard}>
+          <View style={[styles.actionCard, { backgroundColor: theme.card }]}>
             <View style={styles.actionHeader}>
                <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1}}>
                  <TranslatedText style={styles.actionTitle}>allocateTo</TranslatedText>
@@ -102,9 +113,9 @@ export default function JarsScreen({ navigation }: any) {
                </TouchableOpacity>
             </View>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
               placeholder={t('enterAmount', lang) || 'Enter Amount'}
-              placeholderTextColor={Colors.neutral.gray}
+              placeholderTextColor={theme.textSub}
               keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}
@@ -142,36 +153,39 @@ export default function JarsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.neutral.offWhite,
   },
   scroll: {
     padding: 20,
     paddingBottom: 100,
   },
   balanceCard: {
-    backgroundColor: Colors.neutral.white,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     marginBottom: 20,
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldDark,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
   },
   balanceLabel: {
-    fontSize: 14,
-    color: Colors.neutral.darkGray,
-    fontWeight: '600',
+    fontSize: 13,
+    color: Colors.sakhi.goldDark,
+    fontWeight: '800',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
   balanceAmount: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
-    color: Colors.sakhi.gold,
+    color: Colors.sakhi.goldLight,
     marginTop: 4,
+    textShadowColor: 'rgba(0,0,0,0.15)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   jarsGrid: {
     flexDirection: 'row',
@@ -188,15 +202,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   actionCard: {
-    backgroundColor: Colors.neutral.white,
     borderRadius: 18,
     padding: 20,
     marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: Colors.sakhi.goldDark + '40',
+    borderTopWidth: 3,
+    borderTopColor: Colors.sakhi.goldLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
   },
   actionHeader: {
     flexDirection: 'row',
@@ -206,22 +223,19 @@ const styles = StyleSheet.create({
   },
   actionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.neutral.darkGray,
+    fontWeight: '800',
+    color: Colors.sakhi.goldDark,
   },
   closeActionBtn: {
     padding: 4,
   },
   input: {
-    backgroundColor: Colors.neutral.offWhite,
     borderRadius: 12,
     padding: 14,
     fontSize: 18,
-    color: Colors.neutral.darkGray,
     textAlign: 'center',
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: Colors.neutral.gray + '30',
+    borderWidth: 2,
   },
   quickAmounts: {
     flexDirection: 'row',
@@ -231,17 +245,17 @@ const styles = StyleSheet.create({
   },
   quickBtn: {
     flex: 1,
-    backgroundColor: Colors.neutral.offWhite,
+    backgroundColor: Colors.sakhi.goldLight + '20',
     borderRadius: 10,
-    paddingVertical: 8,
+    paddingVertical: 9,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.sakhi.gold + '30',
+    borderWidth: 1.5,
+    borderColor: Colors.sakhi.goldDark + '50',
   },
   quickText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.sakhi.gold,
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.sakhi.goldDark,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -249,19 +263,23 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 13,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   addBtn: {
     backgroundColor: Colors.sakhi.green,
+    borderBottomWidth: 4,
+    borderBottomColor: Colors.sakhi.greenDark,
   },
   removeBtn: {
     backgroundColor: Colors.sakhi.coral,
+    borderBottomWidth: 4,
+    borderBottomColor: '#CC4444',
   },
   btnText: {
     color: Colors.neutral.white,
-    fontWeight: '700',
+    fontWeight: '900',
     fontSize: 15,
   },
 });

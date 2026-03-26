@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -73,7 +73,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       {/* Intro Header */}
       <View style={styles.topSection}>
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-          <Feather name="book-open" size={24} color={Colors.neutral.white} style={{marginRight: 8}} />
+          <Feather name="book-open" size={26} color={Colors.sakhi.goldLight} style={{marginRight: 8}} />
           <Text style={styles.mainTitle}>Sakhis' Ledger</Text>
         </View>
         <Text style={styles.subTitle}>Your Financial Adventure Awaits!</Text>
@@ -107,7 +107,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                   style={[styles.langBtn, lang === l.code && styles.langBtnActive]}
                   onPress={() => setLang(l.code)}
                 >
-                  <Text style={[styles.langLabel, lang === l.code && {color: Colors.sakhi.green}]}>{l.label}</Text>
+                  <Text style={[styles.langLabel, lang === l.code && {color: Colors.sakhi.goldDark}]}>{l.label}</Text>
                   <Text style={styles.langSub}>{l.subLabel}</Text>
                 </TouchableOpacity>
               ))}
@@ -203,7 +203,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: '#218C53',
   },
   topSection: {
     padding: 30,
@@ -211,35 +211,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mainTitle: {
-    color: Colors.neutral.white,
-    fontSize: 28,
+    color: Colors.sakhi.goldLight,
+    fontSize: 30,
     fontWeight: '900',
     marginBottom: 8,
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
   },
   subTitle: {
-    color: Colors.sakhi.gold,
+    color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: 30,
+    opacity: 0.9,
   },
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: 14,
   },
   dot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,215,0,0.3)',
+    transform: [{ rotate: '45deg' }],
   },
   dotActive: {
-    backgroundColor: Colors.sakhi.gold,
+    backgroundColor: Colors.sakhi.goldLight,
+    borderColor: Colors.sakhi.goldDark,
   },
   dotDone: {
     backgroundColor: Colors.neutral.white,
+    borderColor: Colors.sakhi.goldLight,
   },
   contentSection: {
     flex: 1,
@@ -250,21 +260,21 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   card: {
-    backgroundColor: Colors.neutral.white,
+    backgroundColor: Colors.neutral.parchment,
     borderRadius: 20,
     padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1.5,
+    borderColor: Colors.sakhi.goldDark + '30',
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: Colors.neutral.darkGray,
+    fontWeight: '900',
+    color: Colors.sakhi.darker,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -277,19 +287,19 @@ const styles = StyleSheet.create({
   langBtn: {
     width: '48%',
     backgroundColor: Colors.neutral.offWhite,
-    borderRadius: 16,
+    borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.neutral.lightGray,
   },
   langBtnActive: {
-    borderColor: Colors.sakhi.green,
-    backgroundColor: Colors.sakhi.green + '10',
+    borderColor: Colors.sakhi.goldLight,
+    backgroundColor: Colors.sakhi.goldLight + '15',
   },
   langLabel: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: Colors.neutral.darkGray,
     marginBottom: 4,
   },
@@ -300,20 +310,22 @@ const styles = StyleSheet.create({
   },
   audioHint: {
     fontSize: 14,
-    color: '#D97706',
-    fontWeight: '500',
+    color: Colors.sakhi.goldDark,
+    fontWeight: '600',
     lineHeight: 20,
   },
   testAudioBtn: {
-    backgroundColor: Colors.sakhi.gold,
+    backgroundColor: Colors.sakhi.goldLight,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 13,
     alignItems: 'center',
     marginTop: 20,
+    borderBottomWidth: 3,
+    borderBottomColor: Colors.sakhi.goldDark,
   },
   testAudioText: {
-    color: Colors.neutral.darkGray,
-    fontWeight: '800',
+    color: '#1A1A2E',
+    fontWeight: '900',
     fontSize: 14,
   },
   guideRow: {
@@ -331,25 +343,28 @@ const styles = StyleSheet.create({
     borderColor: Colors.neutral.lightGray,
   },
   guideBtnActive: {
-    borderColor: Colors.sakhi.gold,
-    backgroundColor: Colors.sakhi.gold + '10',
+    borderColor: Colors.sakhi.goldLight,
+    backgroundColor: Colors.sakhi.goldLight + '10',
   },
   guideAvatarBox: {
     backgroundColor: Colors.neutral.white,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 2.5,
+    borderColor: Colors.sakhi.goldDark,
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   guideName: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: Colors.neutral.darkGray,
     marginBottom: 4,
   },
@@ -358,18 +373,21 @@ const styles = StyleSheet.create({
     color: Colors.neutral.gray,
     marginBottom: 12,
     textAlign: 'center',
+    fontWeight: '600',
   },
   guideBoostBox: {
-    backgroundColor: Colors.sakhi.gold + '25',
+    backgroundColor: Colors.sakhi.goldLight + '25',
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 8,
     width: '100%',
+    borderWidth: 1,
+    borderColor: Colors.sakhi.goldDark + '30',
   },
   guideBoostText: {
     fontSize: 10,
-    color: '#D97706',
-    fontWeight: '700',
+    color: Colors.sakhi.goldDark,
+    fontWeight: '800',
     textAlign: 'center',
   },
   input: {
@@ -379,8 +397,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: Colors.neutral.black,
     textAlign: 'center',
-    borderWidth: 1,
-    borderColor: Colors.neutral.lightGray,
+    borderWidth: 2,
+    borderColor: Colors.sakhi.goldDark + '40',
   },
   footer: {
     backgroundColor: Colors.neutral.offWhite,
@@ -399,18 +417,20 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   nextBtn: {
-    backgroundColor: Colors.sakhi.green,
+    backgroundColor: Colors.sakhi.goldLight,
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 32,
     marginLeft: 'auto',
+    borderBottomWidth: 4,
+    borderBottomColor: Colors.sakhi.goldDark,
   },
   nextBtnDisabled: {
     opacity: 0.5,
   },
   nextText: {
-    color: Colors.neutral.white,
+    color: '#1A1A2E',
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
   },
 });

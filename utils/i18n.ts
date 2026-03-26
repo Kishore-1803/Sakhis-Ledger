@@ -56,6 +56,22 @@ export const translations = {
     s3Title: "Medical Emergency",
     s4Title: "The Micro-Business Opportunity",
     s5Title: "The Insurance Decision",
+    allMissionsDone: "All Missions Complete!",
+    greatJobToday: "You did amazing today!",
+    dayStreakLabel: "Day Streak!",
+    todaysRewards: "Today's Rewards",
+    bonusXPText: "+100 Bonus XP — Great work!",
+    bonusTrophyText: "+1 Trophy — Keep shining!",
+    freshQuestsTomorrow: "Fresh quests await tomorrow!",
+    offlineSafeMsg: "Works offline — Your progress is always safe!",
+    claimRewardBtn: "Claim Your Reward!",
+    seeYouTomorrow: "See you tomorrow!",
+    claimNowBannerText: "All missions done! Tap to claim!",
+    alreadyClaimedText: "Today's reward claimed! See you tomorrow!",
+    offlineHintText: "This app works without internet! Your progress is always saved.",
+    weekChampionLabel: "Week Champion!",
+    threeDayWarriorLabel: "3-Day Warrior!",
+    streakLabel: "Streak!",
   },
   hi: {
     greeting: 'नमस्ते',
@@ -102,6 +118,22 @@ export const translations = {
     s3Title: "चिकित्सा आपातकाल",
     s4Title: "सूक्ष्म-व्यापार का अवसर",
     s5Title: "बीमा का निर्णय",
+    allMissionsDone: "सभी मिशन पूरे!",
+    greatJobToday: "आज बहुत अच्छा किया!",
+    dayStreakLabel: "दिन की लकीर!",
+    todaysRewards: "आज के इनाम",
+    bonusXPText: "+100 बोनस XP — बहुत अच्छे!",
+    bonusTrophyText: "+1 ट्रॉफी — चमकती रहो!",
+    freshQuestsTomorrow: "कल नए मिशन तैयार होंगे!",
+    offlineSafeMsg: "बिना इंटरनेट भी काम करती है — प्रगति सुरक्षित है!",
+    claimRewardBtn: "इनाम लो!",
+    seeYouTomorrow: "कल फिर मिलेंगे!",
+    claimNowBannerText: "सभी मिशन पूरे! इनाम लो!",
+    alreadyClaimedText: "इनाम लिया! कल आना!",
+    offlineHintText: "यह ऐप बिना इंटरनेट काम करती है! प्रगति हमेशा सुरक्षित है।",
+    weekChampionLabel: "👑 सप्ताह चैंपियन!",
+    threeDayWarriorLabel: "🔥 तीन दिन का योद्धा!",
+    streakLabel: "🔥 लकीर!",
   },
   ta: {
     greeting: 'வணக்கம்',
@@ -433,5 +465,5 @@ export type TranslationKey = keyof typeof translations.en;
 export function t(key: TranslationKey, lang: string = 'en'): string {
   // Fallback to english if string is missing
   const typedLang = lang as LanguageCode;
-  return translations[typedLang]?.[key] || translations['en'][key] || key as string;
+  return (translations[typedLang] as any)?.[key] || translations['en'][key] || key as string;
 }
