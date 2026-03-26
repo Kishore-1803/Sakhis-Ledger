@@ -17,8 +17,13 @@ function formatCountdown(msLeft: number): string {
 const TOTAL_WINDOW_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 export default function DailyTimerBanner() {
+<<<<<<< HEAD
   const deadline = useSelector((state: RootState) => state.user.dailyDeadline) ?? 0;
   const completed: string[] = useSelector((state: RootState) => state.user.dailyMissionsCompleted) ?? [];
+=======
+  const deadline = useSelector((state: RootState) => state.user.dailyDeadline ?? 0);
+  const completed: string[] = useSelector((state: RootState) => state.user.dailyMissionsCompleted ?? []);
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
   const [now, setNow] = useState(Date.now());
   const pulseAnim = useRef(new Animated.Value(1)).current;
 

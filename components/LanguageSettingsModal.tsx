@@ -94,17 +94,29 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
             {/* Quick Stats Row */}
             <View style={[styles.statsRow, { backgroundColor: theme.surface }]}>
               <View style={styles.quickStat}>
+<<<<<<< HEAD
                 <Text style={[styles.quickStatNum, { color: Colors.sakhi.green }]}>{sim.completedScenarios?.length || 0}</Text>
+=======
+                <Text style={[styles.quickStatNum, { color: Colors.sakhi.green }]}>{sim.completedScenarios.length}</Text>
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
                 <Text style={[styles.quickStatLabel, { color: theme.textSub }]}>Quests</Text>
               </View>
               <View style={[styles.quickStatDivider, { backgroundColor: theme.border }]} />
               <View style={styles.quickStat}>
+<<<<<<< HEAD
                 <Text style={[styles.quickStatNum, { color: Colors.feedback.danger }]}>{sim.completedFraudCases?.length || 0}</Text>
+=======
+                <Text style={[styles.quickStatNum, { color: Colors.feedback.danger }]}>{sim.completedFraudCases.length}</Text>
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
                 <Text style={[styles.quickStatLabel, { color: theme.textSub }]}>Scams Beat</Text>
               </View>
               <View style={[styles.quickStatDivider, { backgroundColor: theme.border }]} />
               <View style={styles.quickStat}>
+<<<<<<< HEAD
                 <Text style={[styles.quickStatNum, { color: Colors.sakhi.gold }]}>₹{((sim.jars?.savings || 0) / 1000).toFixed(1)}k</Text>
+=======
+                <Text style={[styles.quickStatNum, { color: Colors.sakhi.gold }]}>₹{(sim.jars.savings / 1000).toFixed(1)}k</Text>
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
                 <Text style={[styles.quickStatLabel, { color: theme.textSub }]}>Saved</Text>
               </View>
               <View style={[styles.quickStatDivider, { backgroundColor: theme.border }]} />

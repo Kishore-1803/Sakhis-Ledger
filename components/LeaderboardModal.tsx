@@ -98,7 +98,11 @@ export default function LeaderboardModal({ visible, onDismiss }: Props) {
 
             {/* Badges */}
             <Text style={[styles.sectionLabel, { color: theme.textSub, marginTop: 20 }]}>YOUR BADGES</Text>
+<<<<<<< HEAD
             {(!badges || badges.length === 0) ? (
+=======
+            {badges.length === 0 ? (
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
               <Text style={[styles.noBadges, { color: theme.textSub }]}>
                 Complete missions to earn your first badge! 🏅
               </Text>
@@ -121,7 +125,11 @@ export default function LeaderboardModal({ visible, onDismiss }: Props) {
             <Text style={[styles.sectionLabel, { color: theme.textSub, marginTop: 16 }]}>LOCKED BADGES</Text>
             <View style={styles.badgesGrid}>
               {(Object.keys(BADGE_META) as BadgeId[])
+<<<<<<< HEAD
                   .filter(b => !(badges as BadgeId[] || []).includes(b))
+=======
+                .filter(b => !(badges as BadgeId[]).includes(b))
+>>>>>>> e48d964ba9ba5e748b2879f1ce53b780e13d3702
                 .map(b => {
                   const meta = BADGE_META[b];
                   return (
