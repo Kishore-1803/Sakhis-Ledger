@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { allocateToJar, removeFromJar, advanceMonth } from '../store/simulationSlice';
 import { addXP, completeDailyMission } from '../store/userSlice';
-import { healJar } from '../store/engagementSlice';
+import { healJar, waterTree } from '../store/engagementSlice';
 import JarCard from '../components/JarCard';
 import GlobalHeader from '../components/GlobalHeader';
 import { Colors, MONTHLY_INCOME } from '../constants/theme';
@@ -41,6 +41,12 @@ export default function JarsScreen({ navigation }: any) {
 
     // Heal jar health when allocating
     dispatch(healJar({ jar: selectedJar, amount: value }));
+
+    // Water tree - grow based on allocation amount (₹100 = 0.1 growth points)
+    const growthPoints = Math.floor(value / 1000);
+    if (growthPoints > 0) {
+      dispatch(waterTree(growthPoints));
+    }
 
     setAmount('');
     dispatch(addXP(5)); // XP for each allocation

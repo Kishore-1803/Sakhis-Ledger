@@ -1,5 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+// ─── Constants ────────────────────────────────────────────────────────────
+
+export const TREE_TIERS = [0, 100, 250, 500, 1000, 1800, 3000, 5000, 8000, 12000];
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface JarHealthState {

@@ -10,6 +10,7 @@ import { applyLifeEvent, dismissLifeEvent } from '../store/simulationSlice';
 import { addXP, completeDailyMission } from '../store/userSlice';
 import TopHeader from '../components/TopHeader';
 import JarCard from '../components/JarCard';
+import TreeWidget from '../components/TreeWidget';
 import LifeEventModal from '../components/LifeEventModal';
 import DailyTimerBanner from '../components/DailyTimerBanner';
 import DailyRewardModal from '../components/DailyRewardModal';
@@ -209,6 +210,11 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
               isVectorIcon={true}
             />
           ))}
+        </View>
+
+        {/* ── Fortune Tree Widget ── */}
+        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+          <TreeWidget onPress={() => navigation.navigate('MainTabs', { screen: 'Tree' })} />
         </View>
 
         {/* ── Offline hint card ── */}

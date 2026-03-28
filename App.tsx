@@ -8,7 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { store, persistor, RootState } from './store/store';
 import { setLastActiveDate, setActiveContent } from './store/simulationSlice';
 import { setDailyDeadline, unlockBadge } from './store/userSlice';
-import { decayJarHealth } from './store/engagementSlice';
+import { decayJarHealth, waterTree } from './store/engagementSlice';
 import { isEndOfMonth } from './engine/simulationEngine';
 import { generateDynamicFraudCases, generateDynamicScenarios } from './engine/contentGenerator';
 import { useTheme } from './utils/useTheme';
@@ -16,6 +16,7 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TranslatedText from './components/TranslatedText';
 import { JarRescueModal } from './components/JarRescueModal';
+import { TreeGrowthModal } from './components/TreeGrowthModal';
 
 // A ref to the NavigationContainer so we can imperatively reset navigation on logout
 const navigationRef = createNavigationContainerRef();
@@ -24,6 +25,7 @@ import HomeScreen from './screens/HomeScreen';
 import ScenariosScreen from './screens/ScenariosScreen';
 import JarsScreen from './screens/JarsScreen';
 import ScamBusterScreen from './screens/ScamBusterScreen';
+import FortuneTreeScreen from './screens/FortuneTreeScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ScenarioDetailScreen from './screens/ScenarioDetailScreen';
 import MonthEndReportModal from './components/MonthEndReportModal';
@@ -64,6 +66,7 @@ function TabNavigator() {
           if (route.name === 'Home') label = 'Home';
           if (route.name === 'Quests') label = 'Quests';
           if (route.name === 'Jars') label = 'Jars';
+          if (route.name === 'Tree') label = 'Tree';
           if (route.name === 'Arena') label = 'Arena';
           return <TranslatedText text={label} lang={lang} style={{ color, fontSize: 10, fontWeight: '900', letterSpacing: 0.5 }} />;
         }
@@ -93,6 +96,15 @@ function TabNavigator() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon name="briefcase" focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Tree"
+        component={FortuneTreeScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="leaf" focused={focused} />
           ),
         }}
       />
@@ -137,6 +149,8 @@ function AppNavigator() {
   const [showMonthEnd, setShowMonthEnd] = useState(false);
   const [jarRescueVisible, setJarRescueVisible] = useState(false);
   const [criticalJar, setCriticalJar] = useState<'household' | 'children' | 'savings' | 'emergency' | null>(null);
+  const [showTreeGrowth, setShowTreeGrowth] = useState(false);
+  const [newTreeTier, setNewTreeTier] = useState<number | null>(null);
 
   // Track previous value so we only react when it actually flips to false
   const prevHasOnboarded = useRef(hasOnboarded);
@@ -236,6 +250,21 @@ function AppNavigator() {
     }
   }, [hasOnboarded]); // Run once on mount/onboarding to avoid infinite loops
 
+  // ── Tree growth watcher ──────────────────────────────────────────────────
+  const fortuneTree = useSelector((state: RootState) => state.engagement?.fortuneTree);
+  const prevTreeTier = useRef(fortuneTree?.treeTier || 0);
+
+  useEffect(() => {
+    if (!hasOnboarded || fortuneTree?.treeTier === undefined) return;
+
+    if (fortuneTree.treeTier > prevTreeTier.current) {
+      // Tree tier increased! Show celebration modal
+      setNewTreeTier(fortuneTree.treeTier);
+      setShowTreeGrowth(true);
+    }
+    prevTreeTier.current = fortuneTree.treeTier;
+  }, [fortuneTree?.treeTier, hasOnboarded]);
+
   return (
     <>
       <Stack.Navigator key={hasOnboarded ? 'app' : 'auth'} screenOptions={{ headerShown: false }}>
@@ -270,6 +299,18 @@ function AppNavigator() {
           onClose={() => {
             setJarRescueVisible(false);
             setCriticalJar(null);
+          }}
+        />
+      )}
+
+      {/* Tree Growth Modal */}
+      {newTreeTier !== null && (
+        <TreeGrowthModal
+          visible={showTreeGrowth}
+          newTier={newTreeTier}
+          onDismiss={() => {
+            setShowTreeGrowth(false);
+            setNewTreeTier(null);
           }}
         />
       )}
