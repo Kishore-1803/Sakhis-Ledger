@@ -1,0 +1,147 @@
+[
+  {
+    "id": "meera_tailoring",
+    "title": "Meera's Tailoring Dream",
+    "character": "community",
+    "theme": "business",
+    "totalChapters": 5,
+    "chapters": [
+      {
+        "id": "ch1_meera",
+        "title": "The Dream Begins",
+        "narrative": "Meera has been doing tailoring work from home for 3 years. Her neighbors love her designs, and she's been saving ₹100-₹200 every week. Now she has ₹5,000 in her savings jar and dreams of starting her own small tailoring business. She could rent a small space in the market for ₹500/month and buy a sewing machine. But she also needs to keep money for emergencies. What should she do?",
+        "image": "👩‍🔧",
+        "choices": [
+          {
+            "id": "safe_choice",
+            "text": "Keep ₹2,000 as emergency fund and use ₹3,000 for business",
+            "nextChapter": "ch2_safe",
+            "isOptimal": true,
+            "impact": {
+              "xpReward": 100,
+              "finHealth": 10
+            },
+            "explanation": "Smart! A good entrepreneur always keeps emergency savings. This ₹2,000 protects you if unexpected expenses come.",
+            "educationalNote": "The golden rule: Never empty your emergency fund for business. A failed month can sink the whole venture if you have no buffer."
+          },
+          {
+            "id": "risky_choice",
+            "text": "Use all ₹5,000 for business setup",
+            "nextChapter": "ch2_risky",
+            "isOptimal": false,
+            "impact": {
+              "xpReward": 50,
+              "finHealth": -5
+            },
+            "explanation": "This is risky! If business is slow one month, how will you buy food or pay medicine? What if the sewing machine breaks?",
+            "educationalNote": "Risk-taking is part of business, but foolish risk destroys dreams. Always keep a cushion for life's uncertainties."
+          }
+        ]
+      },
+      {
+        "id": "ch2_safe",
+        "title": "Business is Growing",
+        "narrative": "You helped Meera make the smart choice! She rented a small space with ₹1,500 and bought a basic sewing machine for ₹800. By month 3, her business is doing well - she's earning ₹800-₹1000 monthly from tailoring orders. But now she wants to expand. A customer asked if she can do embroidery work too, which would require a ₹2,000 embroidery machine. Her new business income is ₹900/month. What's her next move?",
+        "image": "💼",
+        "choices": [
+          {
+            "id": "expand_smart",
+            "text": "Save her business profits for 3 months, then buy the machine (₹2,700 total)",
+            "nextChapter": "ch3_success",
+            "isOptimal": true,
+            "impact": {
+              "xpReward": 150,
+              "finHealth": 15
+            },
+            "explanation": "Excellent! This approach grows sustainable business. She'll have ₹3,600 in 4 months to buy the machine AND keep reinvestment buffer.",
+            "educationalNote": "Profitable businesses are built with patience. Reinvesting earnings slowly but steadily is how small businesses become successful."
+          },
+          {
+            "id": "expand_risky",
+            "text": "Take a loan from the moneylender for ₹2,000 at 10% interest",
+            "nextChapter": "ch2_risky",
+            "isOptimal": false,
+            "impact": {
+              "xpReward": 50,
+              "finHealth": -8
+            },
+            "explanation": "Danger alert! 10% monthly interest becomes ₹200/month on top of her ₹900 income. That's 22% of her earnings just for interest!",
+            "educationalNote": "High-interest loans can destroy small businesses. Always try to grow from your own earnings first before taking debt."
+          }
+        ]
+      },
+      {
+        "id": "ch3_success",
+        "title": "Diversity Pays Off",
+        "narrative": "After 4 months of smart saving, Meera has ₹3,600! She buys the embroidery machine for ₹2,000 and keeps ₹1,600 as working capital. Within 2 months, she gets 15+ embroidery orders - double her tailoring clients! Her monthly income is now ₹1,800. She's thinking about hiring her friend Radha as an assistant for ₹400/month. But this will eat into her profits. Should she hire?",
+        "image": "👭",
+        "choices": [
+          {
+            "id": "hire_smart",
+            "text": "Yes, hire Radha. With her help, you can take more orders and grow to ₹2,500/month revenue",
+            "nextChapter": "ch4_empower",
+            "isOptimal": true,
+            "impact": {
+              "xpReward": 200,
+              "finHealth": 20
+            },
+            "explanation": "Brilliant! By investing ₹400 in Radha, Meera's revenue grows by ₹700. Net gain: ₹300/month. This is smart business thinking.",
+            "educationalNote": "Investing in people amplifies your reach. Good entrepreneurs multiply themselves through trustworthy team members."
+          },
+          {
+            "id": "stay_solo",
+            "text": "No, work alone to keep all ₹1,800 profit",
+            "nextChapter": "ch3_stagnate",
+            "isOptimal": false,
+            "impact": {
+              "xpReward": 50,
+              "finHealth": -3
+            },
+            "explanation": "By staying solo, Meera keeps her ₹1,800. But she's working 70 hours a week and turning customers away. Is  ₹1,800 working 70 hours better than ₹2,100 working 50 hours?",
+            "educationalNote": "Scaling a business requires delegation. Entrepreneurs who don't delegate get burned out and miss opportunities."
+          }
+        ]
+      },
+      {
+        "id": "ch4_empower",
+        "title": "The Mentor Cycle",
+        "narrative": "Radha is fantastic! After 6 months working together, Meera realizes Radha has amazing design ideas. Meera's net income is now ₹2,100/month after paying Radha and expenses. She decides to teach Radha all her embroidery skills. This is the beautiful part of SHG life - when successful women help other women become successful too. One year later, Radha decides to start her own embroidery business with Meera's support (lending her ₹1,000 to start). Meera is now earning ₹3,000/month from her own business AND earning respect in the community.",
+        "image": "🌳",
+        "choices": [
+          {
+            "id": "story_ending_good",
+            "text": "Celebrate Meera's success and Radha's future!",
+            "nextChapter": "ch5_conclusion",
+            "isOptimal": true,
+            "impact": {
+              "xpReward": 250,
+              "finHealth": 25
+            },
+            "explanation": "This is the true wealth! When one woman's success helps lift another woman up, that's the SHG spirit come alive.",
+            "educationalNote": "The most profitable investment isn't always money. It's investing in people and building community wealth."
+          }
+        ]
+      },
+      {
+        "id": "ch5_conclusion",
+        "title": "The Legacy",
+        "narrative": "One year later:\n- Meera has a profitable business earning ₹3,000/month\n- She's saved ₹12,000 in her savings jar\n- She helped start Radha's business\n- She trains other women in embroidery through her SHG\n- Her daughter now does homework without stress, knowing Mom's income is stable\n\nMeera's journey shows that small, smart, patient decisions compound into life-changing success.\n\nKey lessons:\n✅ Always keep emergency funds\n✅ Reinvest profits slowly and steadily  \n✅ Diversify your skills and income\n✅ Invest in people\n✅ Help others succeed\n\nThank you Meera for showing us that dreams come true with discipline!",
+        "image": "🎓",
+        "choices": [
+          {
+            "id": "story_complete_good",
+            "text": "I learned so much from Meera's story!",
+            "nextChapter": null,
+            "isOptimal": true,
+            "impact": {
+              "xpReward": 300,
+              "finHealth": 0
+            },
+            "explanation": "You've completed a story that teaches real business fundamentals through an inspiring narrative.",
+            "educationalNote": "All of Meera's decisions are based on real SHG success stories from rural India."
+          }
+        ]
+      }
+    ]
+  }
+]

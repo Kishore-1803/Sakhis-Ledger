@@ -29,6 +29,7 @@ import FortuneTreeScreen from './screens/FortuneTreeScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
 import ScenarioDetailScreen from './screens/ScenarioDetailScreen';
 import InsightsDashboardScreen from './screens/InsightsDashboardScreen';
+import StoryScreen from './screens/StoryScreen';
 import MonthEndReportModal from './components/MonthEndReportModal';
 
 const Tab = createBottomTabNavigator();
@@ -284,6 +285,11 @@ function AppNavigator() {
             <Stack.Screen
               name="InsightsDashboard"
               component={InsightsDashboardScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+              name="Story"
+              component={StoryScreen}
               options={{ animation: 'slide_from_right' }}
             />
           </>
