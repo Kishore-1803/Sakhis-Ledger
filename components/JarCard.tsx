@@ -7,6 +7,7 @@ import { useTheme } from '../utils/useTheme';
 import Feather from '@expo/vector-icons/Feather';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
+import { JarHealthIndicator } from './JarHealthIndicator';
 
 interface JarCardProps {
   name: string;
@@ -22,12 +23,30 @@ export default function JarCard({ name, amount = 0, icon, goal = 5000, onPress, 
   const jarColor = JarColors[name] || Colors.sakhi.blue;
   const isGoalReached = amount >= goal;
 
+  // Map jar name to jar type for health tracking
+  const jarTypeMap: Record<string, 'household' | 'children' | 'savings' | 'emergency'> = {
+    'Household': 'household',
+    'Children': 'children',
+    'Savings': 'savings',
+    'Emergency': 'emergency',
+  };
+
+  const jarType = jarTypeMap[name];
+  const jarHealth = useSelector((state: RootState) =>
+    jarType ? state.engagement?.jarHealth?.[jarType] : null
+  );
+
   return (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: theme.card, borderTopColor: jarColor, borderLeftColor: jarColor }]}
       onPress={onPress}
       activeOpacity={0.8}
     >
+      {/* Jar Health Indicator Overlay */}
+      {jarHealth && (
+        <JarHealthIndicator health={jarHealth.health} cracksLevel={jarHealth.cracksLevel} />
+      )}
+
       <View style={[styles.iconContainer, { backgroundColor: jarColor + '20', borderColor: Colors.sakhi.goldDark }]}>
         {isVectorIcon
           ? <Feather name={icon as any} size={24} color={jarColor} />

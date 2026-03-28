@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { allocateToJar, removeFromJar, advanceMonth } from '../store/simulationSlice';
 import { addXP, completeDailyMission } from '../store/userSlice';
+import { healJar } from '../store/engagementSlice';
 import JarCard from '../components/JarCard';
 import GlobalHeader from '../components/GlobalHeader';
 import { Colors, MONTHLY_INCOME } from '../constants/theme';
@@ -37,6 +38,10 @@ export default function JarsScreen({ navigation }: any) {
       return;
     }
     dispatch(allocateToJar({ jar: selectedJar, amount: value }));
+
+    // Heal jar health when allocating
+    dispatch(healJar({ jar: selectedJar, amount: value }));
+
     setAmount('');
     dispatch(addXP(5)); // XP for each allocation
 

@@ -8,12 +8,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { store, persistor, RootState } from './store/store';
 import { setLastActiveDate, setActiveContent } from './store/simulationSlice';
 import { setDailyDeadline, unlockBadge } from './store/userSlice';
+import { decayJarHealth } from './store/engagementSlice';
 import { isEndOfMonth } from './engine/simulationEngine';
 import { generateDynamicFraudCases, generateDynamicScenarios } from './engine/contentGenerator';
 import { useTheme } from './utils/useTheme';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TranslatedText from './components/TranslatedText';
+import { JarRescueModal } from './components/JarRescueModal';
 
 // A ref to the NavigationContainer so we can imperatively reset navigation on logout
 const navigationRef = createNavigationContainerRef();
@@ -129,8 +131,13 @@ function AppNavigator() {
   const dispatch = useDispatch();
   const hasOnboarded = useSelector((state: RootState) => state.user.hasOnboarded);
   const sim = useSelector((state: RootState) => state.simulation);
-  
+  const guide = useSelector((state: RootState) => state.user.guide);
+  const jarHealthState = useSelector((state: RootState) => state.engagement?.jarHealth);
+
   const [showMonthEnd, setShowMonthEnd] = useState(false);
+  const [jarRescueVisible, setJarRescueVisible] = useState(false);
+  const [criticalJar, setCriticalJar] = useState<'household' | 'children' | 'savings' | 'emergency' | null>(null);
+
   // Track previous value so we only react when it actually flips to false
   const prevHasOnboarded = useRef(hasOnboarded);
 
@@ -190,10 +197,10 @@ function AppNavigator() {
   // Run once on mount/onboarding to avoid infinite loops with state updates
   useEffect(() => {
     if (!hasOnboarded) return;
-    
+
     const lastDate = new Date(sim.lastActiveDate || Date.now());
     const today = new Date();
-    
+
     // Check if it's a new day or if active content is empty (e.g. first time user logs in)
     const isNewDay = lastDate.toDateString() !== today.toDateString();
     const needsContent = !sim.activeScams || sim.activeScams.length === 0 || !sim.activeScenarios || sim.activeScenarios.length === 0;
@@ -205,6 +212,22 @@ function AppNavigator() {
       const newScenarios = generateDynamicScenarios(curLevel, 5);
       dispatch(setActiveContent({ scams: newScams, scenarios: newScenarios }));
       dispatch(setLastActiveDate(Date.now()));
+
+      // Jar health decay check on new day
+      dispatch(decayJarHealth());
+
+      // Check if any jar needs rescue
+      const currentJarHealth = store.getState().engagement?.jarHealth;
+      if (currentJarHealth) {
+        const jarTypes: Array<'household' | 'children' | 'savings' | 'emergency'> = ['household', 'children', 'savings', 'emergency'];
+        const criticalJars = jarTypes.filter(jarType => currentJarHealth[jarType]?.health < 25);
+
+        if (criticalJars.length > 0) {
+          // Show rescue modal for first critical jar
+          setCriticalJar(criticalJars[0]);
+          setJarRescueVisible(true);
+        }
+      }
     }
 
     // Trigger end of month if it's the calendar end of month AND we haven't shown it yet
@@ -231,12 +254,25 @@ function AppNavigator() {
           </>
         )}
       </Stack.Navigator>
-      
+
       {/* Global Modals */}
-      <MonthEndReportModal 
-        visible={showMonthEnd} 
-        onDismiss={() => setShowMonthEnd(false)} 
+      <MonthEndReportModal
+        visible={showMonthEnd}
+        onDismiss={() => setShowMonthEnd(false)}
       />
+
+      {/* Jar Rescue Modal */}
+      {criticalJar && (
+        <JarRescueModal
+          visible={jarRescueVisible}
+          jarName={criticalJar}
+          guide={guide}
+          onClose={() => {
+            setJarRescueVisible(false);
+            setCriticalJar(null);
+          }}
+        />
+      )}
     </>
   );
 }

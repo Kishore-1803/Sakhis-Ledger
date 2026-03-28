@@ -3,11 +3,12 @@ import { persistStore, persistReducer } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userReducer from './userSlice';
 import simulationReducer from './simulationSlice';
+import engagementReducer from './engagementSlice';
 
 const persistConfig = {
   key: 'sakhi-ledger-root',
   storage: AsyncStorage,
-  whitelist: ['user', 'simulation'],
+  whitelist: ['user', 'simulation', 'engagement'],
   // Fix for string-to-boolean casting issues
   transforms: [
     {
@@ -30,6 +31,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   user: userReducer,
   simulation: simulationReducer,
+  engagement: engagementReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
