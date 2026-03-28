@@ -1,0 +1,84 @@
+[
+  {
+    "id": "harvest_festival",
+    "title": "🌾 Harvest Festival",
+    "description": "Celebrate the harvest season with special rewards for saving!",
+    "icon": "🌾",
+    "dayOfWeek": 6,
+    "durationDays": 2,
+    "challenges": [
+      {
+        "id": "save_1000",
+        "description": "Save ₹1,000 in any jar",
+        "requirement": { "type": "save_amount", "target": 1000 },
+        "reward": { "xp": 200, "badge": "harvest_saver" }
+      },
+      {
+        "id": "allocate_all",
+        "description": "Allocate to all 4 jars",
+        "requirement": { "type": "allocate_jars", "target": 4 },
+        "reward": { "xp": 150 }
+      }
+    ]
+  },
+  {
+    "id": "education_week",
+    "title": "📚 Education Week",
+    "description": "2x XP on all learning activities! Master financial literacy.",
+    "icon": "📚",
+    "dayOfWeek": 3,
+    "durationDays": 7,
+    "challenges": [
+      {
+        "id": "complete_5_scenarios",
+        "description": "Complete 5 scenarios",
+        "requirement": { "type": "complete_scenarios", "target": 5 },
+        "reward": { "xp": 500, "badge": "scenario_champion" }
+      },
+      {
+        "id": "defeat_10_scams",
+        "description": "Defeat 10 scams in Arena",
+        "requirement": { "type": "defeat_scams", "target": 10 },
+        "reward": { "xp": 400, "badge": "scam_master" }
+      }
+    ]
+  },
+  {
+    "id": "diwali_bonanza",
+    "title": "🪔 Diwali Bonanza",
+    "description": "Festival of lights brings bonus rewards!",
+    "icon": "🪔",
+    "dayOfWeek": 4,
+    "durationDays": 3,
+    "challenges": [
+      {
+        "id": "save_2000",
+        "description": "Save ₹2,000 total",
+        "requirement": { "type": "save_amount", "target": 2000 },
+        "reward": { "xp": 300, "badge": "diwali_saver" }
+      }
+    ]
+  },
+  {
+    "id": "womens_day",
+    "title": "👩‍🦰 Women's Empowerment Day",
+    "description": "Celebrate women supporting women. Double rewards on all activities!",
+    "icon": "👩‍🦰",
+    "dayOfWeek": 2,
+    "durationDays": 1,
+    "challenges": [
+      {
+        "id": "complete_story",
+        "description": "Complete any Sakhi Story",
+        "requirement": { "type": "complete_scenarios", "target": 1 },
+        "reward": { "xp": 200, "badge": "empowerment_advocate" }
+      },
+      {
+        "id": "mentor_someone",
+        "description": "Help another Sakhi through mentoring",
+        "requirement": { "type": "defeat_scams", "target": 5 },
+        "reward": { "xp": 250, "badge": "mentor_hero" }
+      }
+    ]
+  }
+]
