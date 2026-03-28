@@ -66,6 +66,7 @@ export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
     <Modal visible={visible} transparent animationType="fade">
       {showExplosion && (
         <LevelUpExplosion
+          visible={showExplosion}
           key={`explosion-${newTier}`}
           onComplete={() => setShowExplosion(false)}
         />

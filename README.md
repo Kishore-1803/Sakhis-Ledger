@@ -73,13 +73,17 @@ Navigate to Arena tab
 
 ---
 
-## 🎮 Gamification — 3 Pillars
+## 🎮 Game Logic & Progression — 5 Pillars
 
 1. **XP & Levels** — Earned on every interaction (quest, scam case, jar allocation, life event). Level threshold increases progressively (+500 XP per tier), keeping the challenge fresh forever.
 
 2. **Leaderboard & Badges** — SHG Community Leaderboard ranks the user against fictional peers in their village group. 7 earnable Badges unlock automatically as milestones are hit (First Quest, Scam Buster, Saver Star, 3-Day Warrior, Week Champion, Level 5 Hero, Daily Hero).
 
-3. **Daily Timed Rewards** — A **4-hour mission window** opens each morning. All 4 missions completed on time = Full XP + Daily Hero badge. Completing after expiry = 30% XP cap, creating genuine urgency without punishing casual users.
+3. **Daily Timed Rewards (The Daily Window)** — A **4-hour mission window** opens each morning. All 4 missions completed on time = Full XP + Daily Hero badge. Completing after expiry = 30% XP cap, creating genuine urgency without punishing casual users. The timer countdown is dynamically translated to prevent breaking layouts.
+
+4. **Monthly Game Loop** — Real-world calendar synchronization triggers an end-of-month report exactly once per month. It evaluates jar health, awards a massive 500 XP completion bonus, and seamlessly generates fresh procedural content aligned with the user's new level for the upcoming calendar month.
+
+5. **Fortune Tree Progression** — A visual representation of financial health. As users accumulate XP and hit new levels, the virtual Fortune Tree upgrades its tier, visually branching out into full bloom, unlocking celebration modals as tangible feedback for long-term consistency.
 
 ---
 
@@ -147,7 +151,8 @@ Navigate to Arena tab
 | Language | TypeScript |
 | State | Redux Toolkit + redux-persist |
 | Storage | AsyncStorage (offline-first) |
-| Audio | Expo Speech (TTS, 9 languages) |
+| Audio | Expo Speech (Dynamic Text-to-Speech, 9 languages) |
+| Localization | Google Translate API (Fallback) + Local i18n hooks (`useDynamicTranslation`) |
 | Icons | @expo/vector-icons (Feather + MaterialCommunityIcons) |
 
 ---

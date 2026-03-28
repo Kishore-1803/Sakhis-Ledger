@@ -26,7 +26,7 @@ export default function MonthEndReportModal({ visible, onDismiss }: MonthEndRepo
 
   const handleClaim = () => {
     dispatch(addXP(500)); // Monthly completion bonus
-    dispatch(markMonthReportShown(sim.month));
+    dispatch(markMonthReportShown(Date.now()));
     dispatch(advanceMonth());
     
     // Generate new dynamic procedural content for the new month based on the updated level!
@@ -37,10 +37,8 @@ export default function MonthEndReportModal({ visible, onDismiss }: MonthEndRepo
     onDismiss();
   };
 
-  const translatedAudioText = useDynamicTranslation('Month end report. Great job managing your finances this month!', lang);
-
   const playAudio = () => {
-    AudioEngine.play(translatedAudioText, lang);
+    AudioEngine.play('Month end report. Great job managing your finances this month!', lang);
   };
 
   if (!visible) return null;

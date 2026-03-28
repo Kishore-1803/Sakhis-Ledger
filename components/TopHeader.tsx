@@ -83,9 +83,9 @@ export default function TopHeader() {
       {/* Top Row: Title & Icons */}
       <View style={styles.topRow}>
         <View style={styles.titleContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
             <MaterialCommunityIcons name="flower" size={26} color={Colors.sakhi.goldLight} style={{ marginRight: 6 }} />
-            <Text style={styles.logoText}>{t('sakhisLedger', lang as any)}</Text>
+            <Text style={styles.logoText} numberOfLines={1} adjustsFontSizeToFit>{t('sakhisLedger', lang as any)}</Text>
           </View>
         </View>
         <View style={styles.rightIcons}>
@@ -178,6 +178,8 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
   },
   logoText: {
     color: Colors.sakhi.goldLight,
@@ -187,6 +189,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    flexShrink: 1,
   },
   rightIcons: {
     flexDirection: 'row',

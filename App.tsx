@@ -106,7 +106,7 @@ function TabNavigator() {
         component={FortuneTreeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="leaf" focused={focused} />
+            <TabIcon name="tree" focused={focused} IconSet={MaterialCommunityIcons} />
           ),
         }}
       />
@@ -123,7 +123,7 @@ function TabNavigator() {
   );
 }
 
-function TabIcon({ name, focused }: { name: any; focused: boolean }) {
+function TabIcon({ name, focused, IconSet = Feather }: { name: any; focused: boolean; IconSet?: any }) {
   const theme = useTheme();
   return (
     <View style={{
@@ -136,7 +136,7 @@ function TabIcon({ name, focused }: { name: any; focused: boolean }) {
       borderWidth: focused ? 1.5 : 0,
       borderColor: '#FFD70050',
     }}>
-      <Feather name={name} size={focused ? 24 : 20} color={focused ? theme.tabActive : theme.tabInactive} />
+      <IconSet name={name} size={focused ? 24 : 20} color={focused ? theme.tabActive : theme.tabInactive} />
     </View>
   );
 }
@@ -247,7 +247,11 @@ function AppNavigator() {
     }
 
     // Trigger end of month if it's the calendar end of month AND we haven't shown it yet
-    if (isEndOfMonth() && sim.lastMonthReportShown < sim.month) {
+    const lastReportDate = new Date(sim.lastMonthReportShown || 0);
+    const hasShownThisMonth = lastReportDate.getMonth() === today.getMonth() && 
+                              lastReportDate.getFullYear() === today.getFullYear();
+
+    if (isEndOfMonth() && !hasShownThisMonth) {
       setShowMonthEnd(true);
     }
   }, [hasOnboarded]); // Run once on mount/onboarding to avoid infinite loops

@@ -93,13 +93,13 @@ export const JarRescueModal: React.FC<JarRescueModalProps> = ({
 
           {/* Title */}
           <Text style={styles.title}>
-            <TranslatedText textKey="jar_rescue_title" />
+            <TranslatedText text="jar_rescue_title" />
           </Text>
 
           {/* Message */}
           <Text style={styles.jarName}>{JAR_LABELS[jarName]}</Text>
           <Text style={styles.message}>
-            <TranslatedText textKey="jar_rescue_message" />
+            <TranslatedText text="jar_rescue_message" />
           </Text>
 
           <View style={styles.guideMessageContainer}>
@@ -117,7 +117,7 @@ export const JarRescueModal: React.FC<JarRescueModalProps> = ({
             activeOpacity={0.8}
           >
             <Text style={styles.rescueButtonText}>
-              <TranslatedText textKey="jar_rescue_button" />
+              <TranslatedText text="jar_rescue_button" />
             </Text>
             <Text style={styles.bonusText}>+50 XP Bonus!</Text>
           </TouchableOpacity>
@@ -129,7 +129,7 @@ export const JarRescueModal: React.FC<JarRescueModalProps> = ({
             activeOpacity={0.7}
           >
             <Text style={styles.laterButtonText}>
-              <TranslatedText textKey="jar_rescue_later" />
+              <TranslatedText text="jar_rescue_later" />
             </Text>
           </TouchableOpacity>
         </Animated.View>

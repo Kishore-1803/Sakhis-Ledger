@@ -13,6 +13,8 @@ import { RootState } from '../store/store';
 import { useTheme } from '../utils/useTheme';
 import TranslatedText from '../components/TranslatedText';
 import Feather from '@expo/vector-icons/Feather';
+import { AudioEngine } from '../utils/audioEngine';
+import { t, LanguageCode } from '../utils/i18n';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,6 +52,7 @@ export default function FortuneTreeScreen() {
   const fortuneTree = useSelector((state: RootState) => state.engagement?.fortuneTree);
   const user = useSelector((state: RootState) => state.user);
   const simulation = useSelector((state: RootState) => state.simulation);
+  const lang = user.language as LanguageCode;
 
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -96,33 +99,43 @@ export default function FortuneTreeScreen() {
     );
   };
 
+  const playAudioHelp = () => {
+    const text = 'Welcome to the Fortune Tree. Your wealth grows like a tree. Allocate money to jars every day, complete scenarios to earn XP, and reach higher levels to boost growth.';
+    AudioEngine.play(text, lang);
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>
-          <TranslatedText textKey="fortune_tree_title" />
-        </Text>
-        <Text style={[styles.subtitle, { color: theme.textSub }]}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <TranslatedText style={[styles.title, { color: theme.text }]}>
+            Fortune Tree
+          </TranslatedText>
+          <TouchableOpacity onPress={playAudioHelp} style={{ padding: 8 }}>
+            <Feather name="volume-2" size={24} color={theme.text} />
+          </TouchableOpacity>
+        </View>
+        <TranslatedText style={[styles.subtitle, { color: theme.textSub }]}>
           Your wealth grows like a tree 🌱
-        </Text>
+        </TranslatedText>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Tree Visual */}
         <View style={[styles.visualContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {renderTreeVisual()}
-          <Text style={[styles.tierText, { color: theme.text }]}>
-            Tier {currentTier + 1} of {TREE_TIERS.length}
-          </Text>
+          <TranslatedText style={[styles.tierText, { color: theme.text }]}>
+            {`Tier ${currentTier + 1} of ${TREE_TIERS.length}`}
+          </TranslatedText>
         </View>
 
         {/* Growth Progress */}
         <View style={[styles.progressCard, { backgroundColor: theme.card }]}>
           <View style={styles.progressHeader}>
-            <Text style={[styles.progressLabel, { color: theme.text }]}>
+            <TranslatedText style={[styles.progressLabel, { color: theme.text }]}>
               Growth Progress
-            </Text>
+            </TranslatedText>
             <Text style={[styles.progressValue, { color: '#2ECC71' }]}>
               {Math.floor(currentGrowthPoints)} / {nextThreshold}
             </Text>
@@ -138,16 +151,16 @@ export default function FortuneTreeScreen() {
               ]}
             />
           </View>
-          <Text style={[styles.progressHint, { color: theme.textSub }]}>
-            {Math.ceil(nextThreshold - currentGrowthPoints)} points to next level
-          </Text>
+          <TranslatedText style={[styles.progressHint, { color: theme.textSub }]}>
+            {`${Math.ceil(nextThreshold - currentGrowthPoints)} points to next level`}
+          </TranslatedText>
         </View>
 
         {/* Unlocked Branches */}
         <View style={styles.branchesContainer}>
-          <Text style={[styles.branchesTitle, { color: theme.text }]}>
+          <TranslatedText style={[styles.branchesTitle, { color: theme.text }]}>
             🌿 Your Branches
-          </Text>
+          </TranslatedText>
 
           {[3, 5, 7, 10].map((tier) => {
             const isUnlocked = currentTier >= tier;
@@ -170,12 +183,12 @@ export default function FortuneTreeScreen() {
                   <View style={styles.branchLeft}>
                     <Text style={styles.branchIcon}>{branch.icon}</Text>
                     <View>
-                      <Text style={[styles.branchName, { color: theme.text }]}>
+                      <TranslatedText style={[styles.branchName, { color: theme.text }]}>
                         {branch.name}
-                      </Text>
-                      <Text style={[styles.branchTier, { color: theme.textSub }]}>
-                        Unlocks at Tier {tier}
-                      </Text>
+                      </TranslatedText>
+                      <TranslatedText style={[styles.branchTier, { color: theme.textSub }]}>
+                        {`Unlocks at Tier ${tier}`}
+                      </TranslatedText>
                     </View>
                   </View>
                   {isUnlocked && (
@@ -192,9 +205,9 @@ export default function FortuneTreeScreen() {
 
         {/* Tier Milestones */}
         <View style={styles.milestonesContainer}>
-          <Text style={[styles.milestonesTitle, { color: theme.text }]}>
+          <TranslatedText style={[styles.milestonesTitle, { color: theme.text }]}>
             📊 Your Progress
-          </Text>
+          </TranslatedText>
           <View style={styles.milestonesGrid}>
             {TREE_TIERS.map((_, idx) => {
               const isReached = currentTier > idx;
@@ -223,13 +236,10 @@ export default function FortuneTreeScreen() {
 
         {/* Tips */}
         <View style={[styles.tipsCard, { backgroundColor: '#FFF3E0', borderColor: '#FFB74D' }]}>
-          <Text style={styles.tipsTitle}>💡 Growth Tips</Text>
-          <Text style={styles.tipsText}>
-            • Allocate money to jars every day{'\n'}
-            • Complete scenarios to earn XP{'\n'}
-            • Reach higher levels to boost growth{'\n'}
-            • Every ₹100 saved adds growth points
-          </Text>
+          <TranslatedText style={styles.tipsTitle}>💡 Growth Tips</TranslatedText>
+          <TranslatedText style={styles.tipsText}>
+            {`• Allocate money to jars every day\n• Complete scenarios to earn XP\n• Reach higher levels to boost growth\n• Every ₹100 saved adds growth points`}
+          </TranslatedText>
         </View>
       </ScrollView>
 
@@ -247,18 +257,18 @@ export default function FortuneTreeScreen() {
             <Text style={styles.modalEmoji}>
               {TREE_BRANCHES[selectedBranch as keyof typeof TREE_BRANCHES].icon}
             </Text>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>
+            <TranslatedText style={[styles.modalTitle, { color: theme.text }]}>
               {TREE_BRANCHES[selectedBranch as keyof typeof TREE_BRANCHES].name}
-            </Text>
-            <Text style={[styles.modalContent2, { color: theme.textSub }]}>
+            </TranslatedText>
+            <TranslatedText style={[styles.modalContent2, { color: theme.textSub }]}>
               {TREE_BRANCHES[selectedBranch as keyof typeof TREE_BRANCHES].content}
-            </Text>
+            </TranslatedText>
 
             <TouchableOpacity
               style={styles.modalCloseBtn}
               onPress={() => setSelectedBranch(null)}
             >
-              <Text style={styles.modalCloseBtnText}>Got it!</Text>
+              <TranslatedText style={styles.modalCloseBtnText}>Got it!</TranslatedText>
             </TouchableOpacity>
           </View>
         </View>

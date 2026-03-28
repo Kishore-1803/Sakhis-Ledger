@@ -21,8 +21,6 @@ export default function GlobalHeader({ title, audioText }: GlobalHeaderProps) {
   const [showSettings, setShowSettings] = useState(false);
   const theme = useTheme();
 
-  const translatedAudioText = useDynamicTranslation(audioText || '', lang);
-
   // Format today's date
   const today = new Date();
   const dateString = today.toLocaleDateString(lang === 'en' ? 'en-IN' : lang, {
@@ -33,7 +31,7 @@ export default function GlobalHeader({ title, audioText }: GlobalHeaderProps) {
 
   const playAudio = () => {
     if (audioText) {
-      AudioEngine.play(translatedAudioText, lang);
+      AudioEngine.play(audioText, lang);
     }
   };
 
@@ -41,7 +39,7 @@ export default function GlobalHeader({ title, audioText }: GlobalHeaderProps) {
     <>
       <View style={[styles.topBar, { backgroundColor: theme.headerBg }]}>
         <View style={styles.titleRow}>
-          <Text style={styles.headerTitle}>{title}</Text>
+          <Text style={styles.headerTitle} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
           <View style={styles.rightIcons}>
             <View style={styles.dateBadge}>
               <Text style={styles.dateText}>{dateString}</Text>
@@ -90,6 +88,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: '900',
+    color: Colors.sakhi.goldLight,
+    letterSpacing: 0.5,
+    flexShrink: 1,
+    marginRight: 8,
+  },
+  rightIcons: {
     color: Colors.sakhi.goldLight,
     flex: 1,
     textShadowColor: 'rgba(0,0,0,0.3)',

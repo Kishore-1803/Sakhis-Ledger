@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { useTheme } from '../utils/useTheme';
 import Feather from '@expo/vector-icons/Feather';
+import TranslatedText from './TranslatedText';
 
 interface TreeWidgetProps {
   onPress?: () => void;
@@ -43,10 +44,10 @@ export default function TreeWidget({ onPress }: TreeWidgetProps) {
         <View style={styles.left}>
           <Text style={styles.emoji}>{treeEmoji}</Text>
           <View style={styles.info}>
-            <Text style={[styles.title, { color: theme.text }]}>Fortune Tree</Text>
-            <Text style={[styles.subtitle, { color: theme.textSub }]}>
-              Tier {currentTier + 1} of {TREE_TIERS.length}
-            </Text>
+            <TranslatedText style={[styles.title, { color: theme.text }]}>Fortune Tree</TranslatedText>
+            <TranslatedText style={[styles.subtitle, { color: theme.textSub }]}>
+              {`Tier ${currentTier + 1} of ${TREE_TIERS.length}`}
+            </TranslatedText>
           </View>
         </View>
         <Feather name="chevron-right" size={20} color={theme.textSub} />
@@ -64,9 +65,9 @@ export default function TreeWidget({ onPress }: TreeWidgetProps) {
           ]}
         />
       </View>
-      <Text style={[styles.progressText, { color: theme.textSub }]}>
-        {Math.floor(currentGrowthPoints)} / {nextThreshold} growth points
-      </Text>
+      <TranslatedText style={[styles.progressText, { color: theme.textSub }]}>
+        {`${Math.floor(currentGrowthPoints)} / ${nextThreshold} growth points`}
+      </TranslatedText>
     </TouchableOpacity>
   );
 }

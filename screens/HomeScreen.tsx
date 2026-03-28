@@ -88,7 +88,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   const playAudioHelp = () => {
-    const text = t('dailyMissions', lang) + '. ' + (lang === 'en' ? 'Complete tasks to earn XP.' : 'कार्य पूरा करें XP कमाएं।');
+    const text = t('dailyMissions', 'en') + '. Complete tasks to earn XP.';
     AudioEngine.play(text, lang);
   };
 

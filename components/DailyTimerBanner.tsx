@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { Colors } from '../constants/theme';
 import Feather from '@expo/vector-icons/Feather';
-
+import { useDynamicTranslation } from '../utils/translate';
+import { LanguageCode } from '../utils/i18n';
 function formatCountdown(msLeft: number): string {
   if (msLeft <= 0) return '00:00:00';
   const totalSecs = Math.floor(msLeft / 1000);
@@ -19,6 +20,7 @@ const TOTAL_WINDOW_MS = 4 * 60 * 60 * 1000; // 4 hours
 export default function DailyTimerBanner() {
   const deadline = useSelector((state: RootState) => state.user.dailyDeadline) ?? 0;
   const completed: string[] = useSelector((state: RootState) => state.user.dailyMissionsCompleted) ?? [];
+  const lang = useSelector((state: RootState) => state.user.language as LanguageCode) || 'en';
   const [now, setNow] = useState(Date.now());
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -55,11 +57,17 @@ export default function DailyTimerBanner() {
     : isUrgent ? 'rgba(231,76,60,0.15)'
     : 'rgba(46,204,113,0.12)';
 
-  const label = isExpired
-    ? "Time's up! Full XP locked for today."
+  const timesUpText = useDynamicTranslation("Time's up! Full XP locked for today.", lang);
+  const hurryText = useDynamicTranslation("Hurry!", lang);
+  const leftText = useDynamicTranslation("left", lang);
+  const dailyWindowText = useDynamicTranslation("Daily window:", lang);
+  const doneText = useDynamicTranslation("done", lang);
+
+  const displayLabel = isExpired
+    ? timesUpText
     : isUrgent
-    ? `⚡ Hurry! ${formatCountdown(msLeft)} left`
-    : `⏳ Daily window: ${formatCountdown(msLeft)}`;
+    ? `⚡ ${hurryText} ${formatCountdown(msLeft)} ${leftText}`
+    : `⏳ ${dailyWindowText} ${formatCountdown(msLeft)}`;
 
   return (
     <Animated.View style={[styles.container, { backgroundColor: bgColor, transform: [{ scale: isUrgent ? pulseAnim : 1 }] }]}>
@@ -70,9 +78,9 @@ export default function DailyTimerBanner() {
           color={barColor}
           style={{ marginRight: 6 }}
         />
-        <Text style={[styles.label, { color: barColor }]}>{label}</Text>
+        <Text style={[styles.label, { color: barColor }]}>{displayLabel}</Text>        
         <Text style={[styles.count, { color: barColor }]}>
-          {completed.length}/4 done
+          {completed.length}/4 {doneText}
         </Text>
       </View>
       {/* Progress bar */}

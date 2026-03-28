@@ -83,7 +83,7 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
   };
 
   const playAudio = () => {
-    AudioEngine.play(translatedNarrative, language);
+    AudioEngine.play(scenario.narrative, language);
   };
 
   return (
