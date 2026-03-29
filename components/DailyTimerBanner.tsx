@@ -47,8 +47,6 @@ export default function DailyTimerBanner() {
     return () => anim.stop();
   }, [isUrgent]);
 
-  if (deadline === 0) return null;
-
   const barColor = isExpired ? Colors.neutral.gray
     : isUrgent ? Colors.feedback.danger
     : Colors.sakhi.green;
@@ -62,6 +60,8 @@ export default function DailyTimerBanner() {
   const leftText = useDynamicTranslation("left", lang);
   const dailyWindowText = useDynamicTranslation("Daily window:", lang);
   const doneText = useDynamicTranslation("done", lang);
+
+  if (deadline === 0) return null;
 
   const displayLabel = isExpired
     ? timesUpText
