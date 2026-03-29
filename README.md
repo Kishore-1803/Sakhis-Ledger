@@ -208,10 +208,11 @@ npx expo start
 ---
 
 ## Developers
-Kishore B [https://github.com/Kishore-1803]
-Venkatram K S [https://github.com/venkatramks]
-Surya H A [https://github.com/Surya-Hariharan]
-Prem N [https://github.com/premn-2025]
+* [Kishore B](https://github.com)
+* [Venkatram K S](https://github.com)
+* [Surya H A](https://github.com)
+* [Prem N](https://github.com)
+
 
 ---
 <div align="center">
