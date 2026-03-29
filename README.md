@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="./Sakhi's%20Ledger.png" alt="Sakhi's Ledger Logo" width="200" />
   <h1>🌸 Sakhi's Ledger 🌸</h1>
   <p><b>Empowering Women in India through Gamified Financial Literacy</b></p>
 
