@@ -251,7 +251,6 @@ The app is purposely designed without traditional account requirements (no email
 * [Surya H A](https://github.com)
 * [Prem N](https://github.com)
 ---
-
 <div align="center">
   Made with ❤️ for financial literacy in rural India.
 </div>
