@@ -143,17 +143,20 @@ Navigate to Arena tab
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Dependencies
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React Native + Expo SDK 51 |
-| Language | TypeScript |
-| State | Redux Toolkit + redux-persist |
-| Storage | AsyncStorage (offline-first) |
-| Audio | Expo Speech (Dynamic Text-to-Speech, 9 languages) |
-| Localization | Google Translate API (Fallback) + Local i18n hooks (`useDynamicTranslation`) |
-| Icons | @expo/vector-icons (Feather + MaterialCommunityIcons) |
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+| **Expo** | `~55.0.6` | App Framework / Runtime |
+| **React Native** | `0.83.2` | Core UI Framework |
+| **React** | `19.2.0` | Component Library |
+| **TypeScript** | `~5.3.3` | Language |
+| **Redux Toolkit** | `^2.3.0` | State Management |
+| **redux-persist** | `^6.0.0` | Offline Storage Sync |
+| **@react-native-async-storage** | `1.23.1` | On-Device Storage |
+| **expo-speech** | `~55.0.9` | Dynamic Text-to-Speech (9 languages) |
+| **nativewind** | `^4.1.23` | Tailwind/Styling |
+| **@expo/vector-icons** | `^14.0.4` | Iconography |
 
 ---
 
@@ -187,25 +190,66 @@ Sakhis-Ledger/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Getting Started (Install, Build & Run)
 
+Follow these step-by-step instructions to set up and run the prototype locally.
+
+### 1. Requirements
+*   **Node.js** (v18 or higher recommended)
+*   **npm** (comes with Node.js)
+*   **Expo CLI** (Optional, `npx expo` works directly)
+
+### 2. Clone the Repository
 ```bash
-# 1. Clone
 git clone https://github.com/Kishore-1803/Sakhis-Ledger.git
-cd Sakhis-Ledger
-
-# 2. Install
-npm install
-
-# 3. Run
-npx expo start
-
-# 4. Open
-# Press 'a' → Android Emulator
-# Press 'i' → iOS Simulator
-# Scan QR → Expo Go on physical device
+cd Sakhis-Ledger/sakhi-app
 ```
 
+### 3. Install Dependencies
+*Note: Due to a known React 19 vs. React Native Web peer dependency conflict, please use the legacy peer deps flag.*
+```bash
+npm install --legacy-peer-deps
+```
+
+### 4. Run the Development Server
+Starts the Expo Metro Bundler. We clear cache (`-c`) to ensure clean localization compilation.
+```bash
+npx expo start -c
+```
+
+### 5. Launch the Prototype
+*   **Physical Device:** Download the **Expo Go** application from the Android Play Store or iOS App Store, then scan the QR code that appears in your terminal.
+*   **Android Emulator:** Press `a` in the terminal to launch the connected emulator.
+*   **iOS Simulator:** Press `i` in the terminal to launch the iOS simulator.
+
+### 6. Building for Production (Optional)
+To build a standalone APK (Android) locally:
+```bash
+npx expo prebuild
+npx expo run:android --variant release
+```
+
+---
+
+## 🔐 Testing Credentials
+
+**No login credentials are required to test or evaluate this prototype.**
+
+The app is purposely designed without traditional account requirements (no email/password locks) to cater directly to our primary demographic: rural women in Self-Help Groups who may not have dedicated email addresses or stable internet access.
+
+**Testing flow:**
+1. Launch the app via Expo Go / Emulator.
+2. Select any preferred language (e.g., Hindi, English, Tamil).
+3. Follow the 4-step offline onboarding flow locally.
+4. Input any **dummy name** (e.g., "Sita").
+5. The application state will begin, and progress is persisted 100% on local device storage without reaching out to an authentication server.
+
+---
+## Developers
+* [Kishore B](https://github.com)
+* [Venkatram K S](https://github.com)
+* [Surya H A](https://github.com)
+* [Prem N](https://github.com)
 ---
 
 <div align="center">
