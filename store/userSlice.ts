@@ -211,6 +211,14 @@ const userSlice = createSlice({
     resetUser() {
       return initialState;
     },
+    /** Directly replace the entire user state (used by switchUserProfile pre-load). */
+    hydrateUser(_state, action: PayloadAction<Partial<UserState>>) {
+      const s = { ...initialState, ...action.payload };
+      // Normalize booleans that may have been persisted as strings
+      s.hasOnboarded = s.hasOnboarded === true || (s.hasOnboarded as any) === 'true';
+      s.isDarkMode   = s.isDarkMode   === true || (s.isDarkMode   as any) === 'true';
+      return s;
+    },
   },
 });
 
@@ -219,8 +227,12 @@ export const {
   setAvatar, addXP, addTrophy, incrementStreak, toggleDarkMode,
   setDailyDeadline, completeDailyMission, claimDailyReward, unlockBadge,
   applyAntigravityResults, archiveDailyPerformance,
+<<<<<<< HEAD
   pauseDailyTimer, resumeDailyTimer,
   resetUser,
+=======
+  resetUser, hydrateUser,
+>>>>>>> d5b78ed (claudeguru)
 } = userSlice.actions;
 
 export default userSlice.reducer;

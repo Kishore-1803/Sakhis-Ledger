@@ -10,12 +10,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, ActivityIndicator, StatusBar, Animated, Easing,
+  ScrollView, ActivityIndicator, StatusBar, Animated, Easing, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
 import { ProfileEntry, loadProfiles, nameToSlug } from '../store/profileRegistry';
 import { Colors } from '../constants/theme';
+
+const LOGO = require('../assets/logo.png');
 
 interface LoginScreenProps {
   onSelectProfile: (slug: string) => void;   // existing profile chosen
@@ -85,9 +87,11 @@ export default function LoginScreen({ onSelectProfile, onNewUser }: LoginScreenP
       {/* ── Hero header ── */}
       <View style={styles.hero}>
         <Animated.View style={{ transform: [{ scale: pulse }] }}>
-          <View style={styles.logoCircle}>
-            <Feather name="book-open" size={36} color={Colors.sakhi.goldLight} />
-          </View>
+          <Image
+            source={LOGO}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </Animated.View>
         <Text style={styles.heroTitle}>Sakhis' Ledger</Text>
         <Text style={styles.heroSub}>Your Financial Adventure Awaits</Text>
@@ -189,21 +193,10 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     paddingHorizontal: 24,
   },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,215,0,0.15)',
-    borderWidth: 2,
-    borderColor: Colors.sakhi.goldLight + '60',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoImage: {
+    width: 100,
+    height: 100,
     marginBottom: 14,
-    shadowColor: Colors.sakhi.goldLight,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 18,
-    elevation: 8,
   },
   heroTitle: {
     color: Colors.sakhi.goldLight,

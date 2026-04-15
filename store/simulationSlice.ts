@@ -2,6 +2,17 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { JarState } from '../engine/simulationEngine';
 import { MONTHLY_INCOME } from '../constants/theme';
 
+// Snapshot of task-progress fields that are saved per-guide on guide switch.
+// Financial state (jars, balance, finHealthScore) and the Fortune Tree are
+// intentionally NOT stored here — they are shared across both guides.
+interface GuideTaskState {
+  completedScenarios: string[];
+  completedFraudCases: string[];
+  currentScenarioId: string | null;
+  totalChoicesMade: number;
+  optimalChoices: number;
+}
+
 interface SimulationSliceState {
   month: number;
   income: number;
@@ -15,11 +26,11 @@ interface SimulationSliceState {
   currentScenarioId: string | null;
   lifeEventActive: boolean;
   lastLifeEvent: string | null;
-  
+
   // Phase 2 Time & Progression
   lastActiveDate: number;
   lastMonthReportShown: number;
-  
+
   // Game Content
   activeScams: any[];
   activeScenarios: any[];
@@ -27,6 +38,13 @@ interface SimulationSliceState {
   // Last life-event financial breakdown (for modal display)
   lastEventJarDeducted: number;
   lastEventBalanceDeducted: number;
+
+  // Per-guide task snapshots — saved when the player switches guides so each
+  // guide remembers its own quest / scam completion history independently.
+  guideStates: {
+    savitri: GuideTaskState | null;
+    shanti:  GuideTaskState | null;
+  };
 }
 
 const initialState: SimulationSliceState = {
@@ -48,6 +66,10 @@ const initialState: SimulationSliceState = {
   activeScenarios: [],
   lastEventJarDeducted: 0,
   lastEventBalanceDeducted: 0,
+  guideStates: {
+    savitri: null,
+    shanti:  null,
+  },
 };
 
 const simulationSlice = createSlice({
@@ -130,8 +152,59 @@ const simulationSlice = createSlice({
     markMonthReportShown(state, action: PayloadAction<number>) {
       state.lastMonthReportShown = action.payload;
     },
+    /**
+     * Switch the active guide (Savitri ↔ Shanti).
+     *
+     * What CHANGES per guide:  completedScenarios, completedFraudCases,
+     *   currentScenarioId, totalChoicesMade, optimalChoices.
+     *   activeScams / activeScenarios are cleared so App.tsx regenerates
+     *   fresh content for the incoming guide.
+     *
+     * What stays SHARED:  jars, balance, finHealthScore, Fortune Tree (in
+     *   engagementSlice), XP/level/streak/trophies (in userSlice).
+     */
+    switchGuide(state, action: PayloadAction<{ from: 'savitri' | 'shanti'; to: 'savitri' | 'shanti' }>) {
+      const { from, to } = action.payload;
+      if (from === to) return;
+
+      // ── Save departing guide's task state ──────────────────────────────────
+      state.guideStates[from] = {
+        completedScenarios: [...state.completedScenarios],
+        completedFraudCases: [...state.completedFraudCases],
+        currentScenarioId:   state.currentScenarioId,
+        totalChoicesMade:    state.totalChoicesMade,
+        optimalChoices:      state.optimalChoices,
+      };
+
+      // ── Restore incoming guide's task state (or fresh initial) ─────────────
+      const saved = state.guideStates[to];
+      if (saved) {
+        state.completedScenarios = saved.completedScenarios;
+        state.completedFraudCases = saved.completedFraudCases;
+        state.currentScenarioId  = saved.currentScenarioId;
+        state.totalChoicesMade   = saved.totalChoicesMade;
+        state.optimalChoices     = saved.optimalChoices;
+      } else {
+        // First time using this guide — clean task slate
+        state.completedScenarios = [];
+        state.completedFraudCases = [];
+        state.currentScenarioId  = null;
+        state.totalChoicesMade   = 0;
+        state.optimalChoices     = 0;
+      }
+
+      // ── Always clear active content ────────────────────────────────────────
+      // App.tsx detects activeScams.length === 0 and generates a fresh batch
+      // of quests/scams tailored to the current level for this guide.
+      state.activeScams     = [];
+      state.activeScenarios = [];
+    },
     resetSimulation() {
       return initialState;
+    },
+    /** Directly replace simulation state (used by switchUserProfile pre-load). */
+    hydrateSimulation(_state, action: PayloadAction<Partial<SimulationSliceState>>) {
+      return { ...initialState, ...action.payload };
     },
   },
 });
@@ -148,6 +221,8 @@ export const {
   advanceMonth,
   setLastActiveDate,
   markMonthReportShown,
+  switchGuide,
   resetSimulation,
+  hydrateSimulation,
 } = simulationSlice.actions;
 export default simulationSlice.reducer;

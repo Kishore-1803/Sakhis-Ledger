@@ -541,6 +541,10 @@ const engagementSlice = createSlice({
     resetEngagement() {
       return initialState;
     },
+    /** Directly replace engagement state (used by switchUserProfile pre-load). */
+    hydrateEngagement(_state, action: PayloadAction<Partial<EngagementState>>) {
+      return { ...initialState, ...action.payload };
+    },
   },
 });
 
@@ -553,6 +557,7 @@ export const {
   earnWisdomToken, spendWisdomToken,
   unlockScenarioPack,
   resetEngagement,
+  hydrateEngagement,
 } = engagementSlice.actions;
 
 export default engagementSlice.reducer;

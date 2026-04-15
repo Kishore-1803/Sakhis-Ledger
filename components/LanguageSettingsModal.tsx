@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, Switch, ScrollV
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { setLanguage, setGuide, toggleDarkMode } from '../store/userSlice';
+import { switchGuide } from '../store/simulationSlice';
 import { useSession } from '../utils/SessionContext';
 import { Colors } from '../constants/theme';
 import { useTheme } from '../utils/useTheme';
@@ -66,7 +67,7 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
                 <Text style={{ fontSize: 28 }}>{guide === 'savitri' ? '👩' : '👵'}</Text>
               </View>
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.profileName}>{name || 'Sakhi'}</Text>
+                <Text style={styles.profileName}>{name || '...'}</Text>
                 <Text style={styles.profileSub}>{guide === 'savitri' ? 'Savitri Didi' : 'Shanti Didi'} • Level {level}</Text>
               </View>
               <View style={styles.profileStats}>
@@ -148,7 +149,12 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
                       { backgroundColor: theme.surface, borderColor: theme.border },
                       active && styles.guideCardActive,
                     ]}
-                    onPress={() => dispatch(setGuide(g.id))}
+                    onPress={() => {
+                      if (g.id !== guide) {
+                        dispatch(switchGuide({ from: guide as 'savitri' | 'shanti', to: g.id }));
+                      }
+                      dispatch(setGuide(g.id));
+                    }}
                   >
                     <Text style={styles.guideEmoji}>{g.emoji}</Text>
                     <Text style={[styles.guideName, { color: active ? Colors.sakhi.goldLight : theme.text }]}>

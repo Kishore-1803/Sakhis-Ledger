@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image, ScrollView } from 'react-native';
+=======
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image } from 'react-native';
+
+const LOGO = require('../assets/logo.png');
+>>>>>>> d5b78ed (claudeguru)
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { setUserName, setLanguage, setGuide, completeOnboarding } from '../store/userSlice';
@@ -83,7 +89,7 @@ export default function OnboardingScreen({ onComplete, prefillName }: Onboarding
       {/* Intro Header */}
       <View style={styles.topSection}>
         <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-          <Feather name="book-open" size={26} color={Colors.sakhi.goldLight} style={{marginRight: 8}} />
+          <Image source={LOGO} style={{ width: 36, height: 36, marginRight: 8 }} resizeMode="contain" />
           <Text style={styles.mainTitle}>Sakhis' Ledger</Text>
         </View>
         <Text style={styles.subTitle}>Your Financial Adventure Awaits!</Text>

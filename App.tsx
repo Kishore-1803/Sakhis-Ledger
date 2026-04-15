@@ -300,7 +300,9 @@ function AppNavigator({
     if (isEndOfMonth() && !hasShownThisMonth) {
       setShowMonthEnd(true);
     }
-  }, [hasOnboarded]); // Run once on mount/onboarding to avoid infinite loops
+  // guide included: when guides switch, switchGuide clears activeScams/Scenarios → needsContent=true
+  // → this effect regenerates fresh content for the incoming guide automatically.
+  }, [hasOnboarded, guide]);
 
   // ── Tree growth watcher ──────────────────────────────────────────────────
   const fortuneTree = useSelector((state: RootState) => state.engagement?.fortuneTree);
@@ -426,7 +428,7 @@ function AppNavigator({
 // Bump this string any time we need to wipe corrupted local storage.
 // The app checks once on first launch; if the saved version differs it clears
 // everything and stores the new version, giving all players a clean slate.
-const STORAGE_VERSION = 'v5'; // ← bumped: fresh start after switchUserProfile fix
+const STORAGE_VERSION = 'v6'; // ← bumped: clear storage for clean test run
 const VERSION_KEY    = 'sakhi-storage-version';
 
 async function runStorageMigration(): Promise<void> {

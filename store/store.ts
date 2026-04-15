@@ -17,9 +17,15 @@ import {
   Persistor,
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+<<<<<<< HEAD
 import userReducer, { resetUser, pauseDailyTimer } from './userSlice';
 import simulationReducer, { resetSimulation } from './simulationSlice';
 import engagementReducer, { resetEngagement } from './engagementSlice';
+=======
+import userReducer, { resetUser, hydrateUser } from './userSlice';
+import simulationReducer, { resetSimulation, hydrateSimulation } from './simulationSlice';
+import engagementReducer, { resetEngagement, hydrateEngagement } from './engagementSlice';
+>>>>>>> d5b78ed (claudeguru)
 import { persistKeyForSlug } from './profileRegistry';
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
@@ -91,20 +97,21 @@ let currentPersistKey = DEFAULT_KEY;
 // ─── Profile switching ────────────────────────────────────────────────────────
 
 /**
- * Saves the current player's Redux state directly to AsyncStorage, then
- * hot-swaps the store to the new player's slot.
+ * Saves the current player's Redux state to AsyncStorage, then hot-swaps
+ * the store to the incoming player's slot.
  *
- * WHY manual write instead of persistor.flush():
- *   pause() sets an internal _isPaused flag that silently prevents flush()
- *   from writing.  Because we need to pause before anything else to stop
- *   race-condition writes, flush() was effectively a no-op — meaning the
- *   departing player's data was NEVER saved.  Writing the state ourselves
- *   via AsyncStorage.setItem (in redux-persist's exact serialisation format)
- *   is the only bulletproof approach.
+ * KEY IMPROVEMENT — manual pre-load:
+ *   After saving the departing player and resetting the store, we immediately
+ *   read the incoming player's saved state from AsyncStorage and dispatch it
+ *   into the store via hydrateUser/hydrateSimulation/hydrateEngagement.
+ *   This means the store contains the correct data BEFORE React re-renders,
+ *   so components never flash with empty/reset state regardless of how fast
+ *   PersistGate bootstraps.
  *
- * @param slug  The storage-safe slug. Pass `null` for "no player" state.
+ * @param slug  Storage-safe slug. Pass `null` to go back to Login screen.
  */
 export async function switchUserProfile(slug: string | null): Promise<Persistor> {
+<<<<<<< HEAD
   // Pause the timer before we serialize the state!
   // store.dispatch(pauseDailyTimer(Date.now())); // Disabled: using native background time explicitly
 
@@ -112,6 +119,15 @@ export async function switchUserProfile(slug: string | null): Promise<Persistor>
   //       Format must match redux-persist's default layout:
   //         AsyncStorage key : "persist:<rootKey>"
   //         Value            : JSON({ user: '{"name":...}', simulation: ..., _persist: ... })
+=======
+  // ── 1. Flush + save departing player's state ──────────────────────────────
+  //       flush() drains any pending debounced write from redux-persist so our
+  //       manual snapshot is always consistent with what's in storage.
+  try {
+    await persistor.flush();
+  } catch {}
+
+>>>>>>> d5b78ed (claudeguru)
   try {
     const state = store.getState() as any;
     const payload: Record<string, string> = {
@@ -126,32 +142,75 @@ export async function switchUserProfile(slug: string | null): Promise<Persistor>
       JSON.stringify(payload),
     );
   } catch (e) {
-    // Non-fatal: in the worst case the departing player loses their last few
-    // seconds of progress, but the incoming player's data is unaffected.
-    console.warn('[switchUserProfile] manual save failed:', e);
+    console.warn('[switchUserProfile] save failed:', e);
   }
 
-  // ── 2. Stop the old persistor so it can't write stale reset-state later ───
+  // ── 2. Stop old persistor — prevents stale writes after the reset ─────────
   persistor.pause();
 
-  // ── 3. Clear in-memory Redux state.  Returning players will get their real
-  //       state back from rehydration in step 5; new players start clean. ────
+  // ── 3. Reset in-memory Redux state ────────────────────────────────────────
   store.dispatch(resetUser());
   store.dispatch(resetSimulation());
   store.dispatch(resetEngagement());
 
-  // ── 4. Swap the persist key to the incoming player's slot ─────────────────
+  // ── 4. Swap to incoming player's storage namespace ────────────────────────
   const newKey = slug ? persistKeyForSlug(slug) : DEFAULT_KEY;
   currentPersistKey = newKey;
 
+  // ── 5. Pre-load incoming player's data (before React render) ─────────────
+  //       Dispatching hydrate actions now ensures the store already holds the
+  //       correct state when React re-renders, regardless of PersistGate timing.
+  if (slug) {
+    try {
+      const raw = await AsyncStorage.getItem(`persist:${newKey}`);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, string>;
+
+        if (parsed.user) {
+          try { store.dispatch(hydrateUser(JSON.parse(parsed.user))); } catch {}
+        }
+        if (parsed.simulation) {
+          try { store.dispatch(hydrateSimulation(JSON.parse(parsed.simulation))); } catch {}
+        }
+        if (parsed.engagement) {
+          try { store.dispatch(hydrateEngagement(JSON.parse(parsed.engagement))); } catch {}
+        }
+      }
+    } catch (e) {
+      console.warn('[switchUserProfile] pre-load failed:', e);
+    }
+  }
+
+  // ── 6. Replace reducer + create fresh persistor for the new namespace ──────
   const newPersisted = persistReducer(buildPersistConfig(newKey), rootReducer);
   store.replaceReducer(newPersisted as any);
 
-  // ── 5. Create a fresh persistor — it reads from newKey and dispatches
-  //       REHYDRATE.  PersistGate (remounted via gateKey in App.tsx) holds
-  //       rendering until REHYDRATE completes, so returning players always
-  //       land on Home (hasOnboarded=true) without ever seeing Onboarding. ───
   const newPersistor = persistStore(store);
   persistor = newPersistor;
+
+  // ── 7. Wait for REHYDRATE to complete before returning ────────────────────
+  //       This is the key reliability fix: switchUserProfile now only resolves
+  //       AFTER the new persistor has fully bootstrapped (REHYDRATE done).
+  //       By the time handleSelectExisting / handleNewUser run in App.tsx, the
+  //       store already has the correct player state — PersistGate renders
+  //       children instantly instead of flashing a blank/loading screen, and
+  //       there is NO window where the Fortune Tree, Jars, or any other slice
+  //       can be read with stale or reset state.
+  await new Promise<void>((resolve) => {
+    // Already bootstrapped (REHYDRATE already fired synchronously — rare but possible)
+    if (newPersistor.getState().bootstrapped) {
+      resolve();
+      return;
+    }
+    const unsub = newPersistor.subscribe(() => {
+      if (newPersistor.getState().bootstrapped) {
+        unsub();
+        resolve();
+      }
+    });
+    // Safety valve: if REHYDRATE never fires (e.g. storage error), don't hang
+    setTimeout(() => { unsub(); resolve(); }, 3000);
+  });
+
   return newPersistor;
 }

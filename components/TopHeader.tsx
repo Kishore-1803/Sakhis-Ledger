@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Image } from 'react-native';
+
+const LOGO = require('../assets/logo.png');
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { Colors } from '../constants/theme';
@@ -84,7 +86,7 @@ export default function TopHeader() {
       <View style={styles.topRow}>
         <View style={styles.titleContainer}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
-            <MaterialCommunityIcons name="flower" size={26} color={Colors.sakhi.goldLight} style={{ marginRight: 6 }} />
+            <Image source={LOGO} style={{ width: 28, height: 28, marginRight: 6 }} resizeMode="contain" />
             <Text style={styles.logoText} numberOfLines={1} adjustsFontSizeToFit>{t('sakhisLedger', lang as any)}</Text>
           </View>
         </View>
@@ -122,7 +124,7 @@ export default function TopHeader() {
             <Text style={{ fontSize: 24 }}>{avatar || '??'}</Text>
           </View>
           <View>
-            <Text style={styles.nameText}>{name || 'Sakhi'}</Text>
+            <Text style={styles.nameText}>{name || '...'}</Text>
             <Text style={styles.titleSubText}>{t('financialWarrior', lang)}</Text>
           </View>
         </View>
