@@ -1,14 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, StatusBar } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { NavigationContainer, createNavigationContainerRef, CommonActions } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { store, persistor, RootState } from './store/store';
+import { store, persistor, switchUserProfile, RootState } from './store/store';
+import { Persistor } from 'redux-persist';
 import { setLastActiveDate, setActiveContent } from './store/simulationSlice';
 import { setDailyDeadline, unlockBadge } from './store/userSlice';
-import { decayJarHealth, waterTree } from './store/engagementSlice';
+import { decayJarHealth } from './store/engagementSlice';
 import { isEndOfMonth } from './engine/simulationEngine';
 import { generateDynamicFraudCases, generateDynamicScenarios } from './engine/contentGenerator';
 import { useTheme } from './utils/useTheme';
@@ -17,6 +19,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import TranslatedText from './components/TranslatedText';
 import { JarRescueModal } from './components/JarRescueModal';
 import { TreeGrowthModal } from './components/TreeGrowthModal';
+import {
+  nameToSlug,
+  registerProfile,
+} from './store/profileRegistry';
+import { SessionContext } from './utils/SessionContext';
 
 // A ref to the NavigationContainer so we can imperatively reset navigation on logout
 const navigationRef = createNavigationContainerRef();
@@ -27,6 +34,7 @@ import JarsScreen from './screens/JarsScreen';
 import ScamBusterScreen from './screens/ScamBusterScreen';
 import FortuneTreeScreen from './screens/FortuneTreeScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import LoginScreen from './screens/LoginScreen';
 import ScenarioDetailScreen from './screens/ScenarioDetailScreen';
 import InsightsDashboardScreen from './screens/InsightsDashboardScreen';
 import StoryScreen from './screens/StoryScreen';
@@ -34,6 +42,12 @@ import MonthEndReportModal from './components/MonthEndReportModal';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+// ─── Session State ────────────────────────────────────────────────────────────
+//
+// "activeSlug" lives OUTSIDE Redux so it persists across a resetUser() call.
+// It is stored in React state at the root `App` level, passed down via
+// render props.  A null slug means "show Login screen".
 
 function TabNavigator() {
   const lang = useSelector((state: RootState) => state.user.language || 'en');
@@ -141,11 +155,27 @@ function TabIcon({ name, focused, IconSet = Feather }: { name: any; focused: boo
   );
 }
 
-function AppNavigator() {
+// ─── AppNavigator ─────────────────────────────────────────────────────────────
+
+interface AppNavigatorProps {
+  activeSlug: string | null;
+  onLogin: (newPersistor: Persistor, slug: string) => void;
+  onNewUserLogin: (newPersistor: Persistor, slug: string) => void;
+  onLogout: () => void;
+  pendingNewName: string | null;
+  onSetPendingName: (name: string) => void;
+  isExistingPlayer: boolean | null;
+}
+
+function AppNavigator({
+  activeSlug, onLogin, onNewUserLogin, onLogout, pendingNewName, onSetPendingName, isExistingPlayer,
+}: AppNavigatorProps) {
   const dispatch = useDispatch();
   const hasOnboarded = useSelector((state: RootState) => state.user.hasOnboarded);
-  const sim = useSelector((state: RootState) => state.simulation);
-  const guide = useSelector((state: RootState) => state.user.guide);
+  const userName    = useSelector((state: RootState) => state.user.name);
+  const userAvatar  = useSelector((state: RootState) => state.user.avatar);
+  const sim         = useSelector((state: RootState) => state.simulation);
+  const guide       = useSelector((state: RootState) => state.user.guide);
   const jarHealthState = useSelector((state: RootState) => state.engagement?.jarHealth);
 
   const [showMonthEnd, setShowMonthEnd] = useState(false);
@@ -157,24 +187,29 @@ function AppNavigator() {
   // Track previous value so we only react when it actually flips to false
   const prevHasOnboarded = useRef(hasOnboarded);
 
-  const handleOnboardingComplete = () => {};
-
-  // ── Logout navigation: when hasOnboarded flips false, hard-reset the stack ──
+  // ── When onboarding completes, register the profile ────────────────────────
   useEffect(() => {
-    if (prevHasOnboarded.current === true && !hasOnboarded) {
-      // State has changed from logged-in → logged-out.
-      // Imperatively reset the navigation stack to Onboarding.
-      if (navigationRef.isReady()) {
-        navigationRef.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'Onboarding' }],
-          })
-        );
-      }
+    if (prevHasOnboarded.current === false && hasOnboarded && userName) {
+      // Just finished onboarding — register this player in the global registry
+      registerProfile({
+        name: userName,
+        lastLogin: Date.now(),
+        avatar: userAvatar || '👩',
+      });
     }
     prevHasOnboarded.current = hasOnboarded;
-  }, [hasOnboarded]);
+  }, [hasOnboarded, userName]);
+
+  // ── Update lastLogin timestamp each time an existing user resumes ──────────
+  useEffect(() => {
+    if (hasOnboarded && userName && activeSlug) {
+      registerProfile({
+        name: userName,
+        lastLogin: Date.now(),
+        avatar: userAvatar || '👩',
+      });
+    }
+  }, [activeSlug]); // only on first load of this profile
 
   // ── Daily session window init ───────────────────────────────────────────────
   const lastSessionDate = useSelector((state: RootState) => state.user.lastSessionDate);
@@ -248,7 +283,7 @@ function AppNavigator() {
 
     // Trigger end of month if it's the calendar end of month AND we haven't shown it yet
     const lastReportDate = new Date(sim.lastMonthReportShown || 0);
-    const hasShownThisMonth = lastReportDate.getMonth() === today.getMonth() && 
+    const hasShownThisMonth = lastReportDate.getMonth() === today.getMonth() &&
                               lastReportDate.getFullYear() === today.getFullYear();
 
     if (isEndOfMonth() && !hasShownThisMonth) {
@@ -271,14 +306,56 @@ function AppNavigator() {
     prevTreeTier.current = fortuneTree.treeTier;
   }, [fortuneTree?.treeTier, hasOnboarded]);
 
+  // ── Determine which root screen to show ───────────────────────────────────
+  //
+  // Priority order:
+  //   1. No active slug → Login
+  //   2. Active slug but !hasOnboarded → Onboarding (new player first time)
+  //   3. Active slug + hasOnboarded → Main app
+
+  const showLogin = activeSlug === null;
+  // Existing players (isExistingPlayer=true) skip Onboarding unconditionally
+  // — do not rely on hasOnboarded from Redux which may not have rehydrated yet.
+  // New players (isExistingPlayer=false) need Onboarding if not yet completed.
+  const showOnboarding = !showLogin && isExistingPlayer !== true && !hasOnboarded;
+  const showApp        = !showLogin && !showOnboarding;
+
   return (
     <>
-      <Stack.Navigator key={hasOnboarded ? 'app' : 'auth'} screenOptions={{ headerShown: false }}>
-        {!hasOnboarded ? (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {showLogin ? (
+          // ── Login / Profile picker ─────────────────────────────────────
+          <Stack.Screen name="Login">
+            {() => (
+              <LoginScreen
+                onSelectProfile={async (slug) => {
+                  // Existing player — mark so routing never shows Onboarding
+                  const np = await switchUserProfile(slug);
+                  onLogin(np, slug);
+                }}
+                onNewUser={async (name) => {
+                  const slug = nameToSlug(name);
+                  onSetPendingName(name);
+                  const np = await switchUserProfile(slug);
+                  onNewUserLogin(np, slug);  // ← new user handler → shows Onboarding
+                }}
+              />
+            )}
+          </Stack.Screen>
+        ) : showOnboarding ? (
+          // ── Onboarding (new player) ────────────────────────────────────
           <Stack.Screen name="Onboarding">
-            {(props) => <OnboardingScreen {...props} onComplete={handleOnboardingComplete} />}
+            {(props) => (
+              <OnboardingScreen
+                {...props}
+                onComplete={() => {}}
+                // Pre-fill name if we got it from LoginScreen new-user flow
+                prefillName={pendingNewName ?? undefined}
+              />
+            )}
           </Stack.Screen>
         ) : (
+          // ── Main app ──────────────────────────────────────────────────
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
             <Stack.Screen
@@ -334,24 +411,100 @@ function AppNavigator() {
   );
 }
 
+// ─── Storage version gate ─────────────────────────────────────────────────────
+// Bump this string any time we need to wipe corrupted local storage.
+// The app checks once on first launch; if the saved version differs it clears
+// everything and stores the new version, giving all players a clean slate.
+const STORAGE_VERSION = 'v5'; // ← bumped: fresh start after switchUserProfile fix
+const VERSION_KEY    = 'sakhi-storage-version';
+
+async function runStorageMigration(): Promise<void> {
+  try {
+    const saved = await AsyncStorage.getItem(VERSION_KEY);
+    if (saved !== STORAGE_VERSION) {
+      await AsyncStorage.clear();                          // wipe corrupted data
+      await AsyncStorage.setItem(VERSION_KEY, STORAGE_VERSION);
+    }
+  } catch {
+    // Storage unavailable — proceed anyway
+  }
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
 export default function App() {
+  const [activeSlug, setActiveSlug]           = useState<string | null>(null);
+  const [pendingNewName, setPendingNewName]    = useState<string | null>(null);
+  const [activePersistor, setActivePersistor] = useState<Persistor>(persistor);
+  const [gateKey, setGateKey]                 = useState(0);
+  const [storageReady, setStorageReady]       = useState(false);
+  // true  = selected existing player → skip Onboarding
+  // false = brand new player → must Onboard
+  // null  = no one logged in yet
+  const [isExistingPlayer, setIsExistingPlayer] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    runStorageMigration().finally(() => setStorageReady(true));
+  }, []);
+
+  // Called when an EXISTING player is chosen from the list
+  const handleSelectExisting = useCallback((newPersistor: Persistor, slug: string) => {
+    setIsExistingPlayer(true);
+    setActivePersistor(newPersistor);
+    setActiveSlug(slug);
+    setGateKey(k => k + 1);
+  }, []);
+
+  // Called when a BRAND NEW player types their name and hits Go
+  const handleNewUser = useCallback((newPersistor: Persistor, slug: string) => {
+    setIsExistingPlayer(false);
+    setActivePersistor(newPersistor);
+    setActiveSlug(slug);
+    setGateKey(k => k + 1);
+  }, []);
+
+  const handleSetPendingName = useCallback((name: string) => {
+    setPendingNewName(name);
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    const newPersistor = await switchUserProfile(null);
+    setIsExistingPlayer(null);
+    setActivePersistor(newPersistor);
+    setActiveSlug(null);
+    setPendingNewName(null);
+    setGateKey(k => k + 1);
+  }, []);
+
+  if (!storageReady) return null;
+
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <NavigationContainer ref={navigationRef}>
-          <AppNavigatorWithStatusBar />
-        </NavigationContainer>
+      <PersistGate key={gateKey} loading={null} persistor={activePersistor}>
+        <SessionContext.Provider value={{ onLogout: handleLogout }}>
+          <NavigationContainer ref={navigationRef}>
+            <AppNavigatorWithStatusBar
+              activeSlug={activeSlug}
+              onLogin={handleSelectExisting}
+              onNewUserLogin={handleNewUser}
+              onLogout={handleLogout}
+              pendingNewName={pendingNewName}
+              onSetPendingName={handleSetPendingName}
+              isExistingPlayer={isExistingPlayer}
+            />
+          </NavigationContainer>
+        </SessionContext.Provider>
       </PersistGate>
     </Provider>
   );
 }
 
-function AppNavigatorWithStatusBar() {
+function AppNavigatorWithStatusBar(props: AppNavigatorProps) {
   const theme = useTheme();
   return (
     <>
       <StatusBar barStyle={theme.statusBar} backgroundColor={theme.bg} />
-      <AppNavigator />
+      <AppNavigator {...props} />
     </>
   );
 }

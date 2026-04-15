@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -10,6 +10,7 @@ import Feather from '@expo/vector-icons/Feather';
 
 interface OnboardingScreenProps {
   onComplete: () => void;
+  prefillName?: string;
 }
 
 const GUIDES = [
@@ -29,31 +30,40 @@ const GUIDES = [
   },
 ];
 
-export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
+export default function OnboardingScreen({ onComplete, prefillName }: OnboardingScreenProps) {
   const dispatch = useDispatch();
   const [step, setStep] = useState(0);
   
   // Form State
   const [lang, setLang] = useState('en');
   const [guide, setGuideSelection] = useState<'savitri'|'shanti'>('savitri');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(prefillName ?? '');
 
-  const STEPS_CONFIG = [
-    { id: 'language', title: 'Choose Your Language' },
-    { id: 'audio', title: 'Turn On Audio Guidance' },
-    { id: 'guide', title: 'Choose Your Guide' },
-    { id: 'name', title: 'What is your name?' },
-  ];
+  // If name was already provided from Login screen, skip that step
+  const STEPS_CONFIG = prefillName
+    ? [
+        { id: 'language', title: 'Choose Your Language' },
+        { id: 'audio', title: 'Turn On Audio Guidance' },
+        { id: 'guide', title: 'Choose Your Guide' },
+      ]
+    : [
+        { id: 'language', title: 'Choose Your Language' },
+        { id: 'audio', title: 'Turn On Audio Guidance' },
+        { id: 'guide', title: 'Choose Your Guide' },
+        { id: 'name', title: 'What is your name?' },
+      ];
 
   const currentStepId = STEPS_CONFIG[step].id;
   const isLastStep = step === STEPS_CONFIG.length - 1;
 
   const handleNext = () => {
     if (isLastStep) {
-      if (name.trim()) {
+      // Use prefillName if available, otherwise require the name field
+      const finalName = prefillName?.trim() || name.trim();
+      if (finalName) {
         dispatch(setLanguage(lang));
         dispatch(setGuide(guide));
-        dispatch(setUserName(name.trim()));
+        dispatch(setUserName(finalName));
         dispatch(completeOnboarding());
         onComplete();
       }

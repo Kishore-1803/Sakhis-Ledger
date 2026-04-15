@@ -2,9 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert, Switch, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import { setLanguage, resetUser, toggleDarkMode } from '../store/userSlice';
-import { resetSimulation } from '../store/simulationSlice';
-import { persistor } from '../store/store';
+import { setLanguage, setGuide, toggleDarkMode } from '../store/userSlice';
+import { useSession } from '../utils/SessionContext';
 import { Colors } from '../constants/theme';
 import { useTheme } from '../utils/useTheme';
 import { t, LanguageCode, LANGUAGES } from '../utils/i18n';
@@ -23,6 +22,7 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
   const lang = useSelector((state: RootState) => state.user.language as LanguageCode);
   const { name, level, xp, streak, trophies, isDarkMode, guide } = useSelector((state: RootState) => state.user);
   const sim = useSelector((state: RootState) => state.simulation);
+  const { onLogout } = useSession();
 
   const handleLangSelect = (code: string) => {
     dispatch(setLanguage(code));
@@ -31,23 +31,17 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
 
   const handleLogout = () => {
     Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out and reset all progress?',
+      'Switch Player',
+      'Go back to the player selection screen? Your progress is saved automatically.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Log Out',
+          text: 'Switch Player',
           style: 'destructive',
           onPress: () => {
-            // Close the modal first, then synchronously reset all state.
-            // Redux dispatches are synchronous — hasOnboarded becomes false
-            // immediately, which triggers AppNavigator to navigate to Onboarding.
             onDismiss();
-            dispatch(resetSimulation());
-            dispatch(resetUser());
-            // Purge AsyncStorage in the background (fire-and-forget).
-            // No need to await — the nav transition is driven by Redux state.
-            persistor.purge();
+            // switchUserProfile + navigation reset is handled by SessionContext's onLogout
+            onLogout();
           },
         },
       ]
@@ -128,6 +122,52 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
               />
             </View>
 
+            {/* Guide Switcher */}
+            <Text style={[styles.sectionText, { color: theme.textSub }]}>Your Guide (Didi)</Text>
+            <View style={styles.guideRow}>
+              {[
+                {
+                  id: 'savitri' as const,
+                  emoji: '👩',
+                  name: 'Savitri Didi',
+                  desc: 'Budget & Savings expert',
+                },
+                {
+                  id: 'shanti' as const,
+                  emoji: '👵',
+                  name: 'Shanti Didi',
+                  desc: 'Fraud protection expert',
+                },
+              ].map((g) => {
+                const active = guide === g.id;
+                return (
+                  <TouchableOpacity
+                    key={g.id}
+                    style={[
+                      styles.guideCard,
+                      { backgroundColor: theme.surface, borderColor: theme.border },
+                      active && styles.guideCardActive,
+                    ]}
+                    onPress={() => dispatch(setGuide(g.id))}
+                  >
+                    <Text style={styles.guideEmoji}>{g.emoji}</Text>
+                    <Text style={[styles.guideName, { color: active ? Colors.sakhi.goldLight : theme.text }]}>
+                      {g.name}
+                    </Text>
+                    <Text style={[styles.guideDesc, { color: theme.textSub }]}>{g.desc}</Text>
+                    {active && (
+                      <View style={styles.activeChip}>
+                        <Text style={styles.activeChipText}>Active</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={[styles.guideNote, { color: theme.textSub }]}>
+              💡 Switching guides keeps all your XP, jars and tree progress — you learn from both!
+            </Text>
+
             {/* Language Section */}
             <Text style={[styles.sectionText, { color: theme.textSub }]}>Language</Text>
             <View style={styles.langGrid}>
@@ -145,7 +185,7 @@ export default function LanguageSettingsModal({ visible, onDismiss }: LanguageSe
             {/* Logout */}
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
               <Feather name="log-out" size={20} color={Colors.sakhi.coral} style={{ marginRight: 8 }} />
-              <Text style={styles.logoutBtnText}>Log Out / Reset App</Text>
+              <Text style={styles.logoutBtnText}>Switch Player</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.closeBtn, { backgroundColor: theme.surface }]} onPress={onDismiss}>
@@ -323,6 +363,58 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontSize: 15,
     fontWeight: '800',
+  },
+
+  // ── Guide Switcher ────────────────────────────────────────────────────────
+  guideRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 8,
+  },
+  guideCard: {
+    flex: 1,
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 2,
+  },
+  guideCardActive: {
+    borderColor: Colors.sakhi.goldLight,
+    backgroundColor: Colors.sakhi.green + '20',
+  },
+  guideEmoji: {
+    fontSize: 32,
+    marginBottom: 6,
+  },
+  guideName: {
+    fontSize: 13,
+    fontWeight: '900',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  guideDesc: {
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  activeChip: {
+    backgroundColor: Colors.sakhi.goldLight,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  activeChipText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#1A1A2E',
+  },
+  guideNote: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 16,
   },
 });
 

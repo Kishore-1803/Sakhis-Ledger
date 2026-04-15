@@ -42,11 +42,9 @@ export default function JarsScreen({ navigation }: any) {
     // Heal jar health when allocating
     dispatch(healJar({ jar: selectedJar, amount: value }));
 
-    // Water tree - grow based on allocation amount (₹100 = 0.1 growth points)
-    const growthPoints = Math.floor(value / 1000);
-    if (growthPoints > 0) {
-      dispatch(waterTree(growthPoints));
-    }
+    // Water tree - ₹100 = 1 growth point
+    const growthPoints = Math.max(1, Math.floor(value / 100));
+    dispatch(waterTree(growthPoints));
 
     setAmount('');
     dispatch(addXP(5)); // XP for each allocation

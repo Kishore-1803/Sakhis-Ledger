@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { completeScenario } from '../store/simulationSlice';
 import { addXP, incrementStreak, completeDailyMission } from '../store/userSlice';
+import { waterTree } from '../store/engagementSlice';
 import { behavioralLogger } from '../engine/behavioralLogger';
 import { Colors } from '../constants/theme';
 import { useTheme } from '../utils/useTheme';
@@ -67,6 +68,9 @@ export default function ScenarioDetailScreen({ route, navigation }: ScenarioDeta
         finHealthDelta: choice.impact.finHealth || 0,
       })
     );
+
+    // Water the Fortune Tree — completing quests grows the tree
+    dispatch(waterTree(choice.isOptimal ? 15 : 8));
 
     // Mark 'quest' mission done only when ALL active scenarios are completed
     const updatedCompleted = [...(sim.completedScenarios || []), scenario.id];

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { completeFraudCase } from '../store/simulationSlice';
 import { addXP, incrementStreak, completeDailyMission } from '../store/userSlice';
+import { waterTree } from '../store/engagementSlice';
 import GlobalHeader from '../components/GlobalHeader';
 import TranslatedText from '../components/TranslatedText';
 import { Colors } from '../constants/theme';
@@ -73,8 +74,10 @@ export default function ScamBusterScreen() {
     
     if (isCorrect) {
       dispatch(addXP(100));
+      dispatch(waterTree(20));  // Correct scam detection = big tree growth
     } else {
       dispatch(addXP(20));
+      dispatch(waterTree(5));   // Even learning grows the tree
     }
 
     if (currentCase) {
