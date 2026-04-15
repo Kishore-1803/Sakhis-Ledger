@@ -9,7 +9,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { store, persistor, switchUserProfile, RootState } from './store/store';
 import { Persistor } from 'redux-persist';
 import { setLastActiveDate, setActiveContent } from './store/simulationSlice';
-import { setDailyDeadline, unlockBadge } from './store/userSlice';
+import { setDailyDeadline, unlockBadge, resumeDailyTimer } from './store/userSlice';
 import { decayJarHealth } from './store/engagementSlice';
 import { isEndOfMonth } from './engine/simulationEngine';
 import { generateDynamicFraudCases, generateDynamicScenarios } from './engine/contentGenerator';
@@ -213,15 +213,26 @@ function AppNavigator({
 
   // ── Daily session window init ───────────────────────────────────────────────
   const lastSessionDate = useSelector((state: RootState) => state.user.lastSessionDate);
+  const dailyTimeRemaining = useSelector((state: RootState) => state.user.dailyTimeRemaining);
+  // ── Daily session window init ───────────────────────────────────────────────
   useEffect(() => {
-    if (!hasOnboarded) return;
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (lastSessionDate !== todayStr) {
-      // New day: set a 4-hour window from now
-      const deadline = Date.now() + 4 * 60 * 60 * 1000;
-      dispatch(setDailyDeadline({ dateStr: todayStr, deadline }));
-    }
-  }, [hasOnboarded]); // Only check once per mount
+    if (!activeSlug) return;
+    
+    setTimeout(() => {
+      const currentUser = store.getState().user;
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      const isMissing = !currentUser.dailyDeadline || currentUser.dailyDeadline === 0;
+      
+      if (currentUser.lastSessionDate !== todayStr || isMissing) {
+        // Only grant a 4-hour window if it is a brand new day natively, or if the user is 100% brand new.
+        // If they expire (00:00:00), they legitimately stay expired until the next day!
+        const newDeadline = Date.now() + 4 * 60 * 60 * 1000;
+        store.dispatch(setDailyDeadline({ dateStr: todayStr, deadline: newDeadline }));
+      }
+      // Otherwise, we do nothing! Natively parallel running time handles everything flawlessly!
+    }, 150);
+  }, [activeSlug]); // evaluates securely relying solely on profile mount
 
   // ── Badge unlock watcher ────────────────────────────────────────────────
   const completedScenarios = useSelector((state: RootState) => state.simulation.completedScenarios) || [];
@@ -233,7 +244,7 @@ function AppNavigator({
   const dailyDeadline = useSelector((state: RootState) => state.user.dailyDeadline) ?? 0;
 
   useEffect(() => {
-    if (!hasOnboarded) return;
+    if (!activeSlug) return;
     if (completedScenarios.length >= 1) dispatch(unlockBadge('first_quest'));
     if (completedFraudCases.length >= 5) dispatch(unlockBadge('scam_buster'));
     if (savings >= 5000)                 dispatch(unlockBadge('saver'));
@@ -243,11 +254,11 @@ function AppNavigator({
     // daily_hero: all 4 missions done on time
     const isOnTime = dailyDeadline > 0 && Date.now() < dailyDeadline;
     if (dailyMissionsCompleted.length >= 4 && isOnTime) dispatch(unlockBadge('daily_hero'));
-  }, [completedScenarios, completedFraudCases, savings, userStreak, userLevel, dailyMissionsCompleted]);
+  }, [completedScenarios, completedFraudCases, savings, userStreak, userLevel, dailyMissionsCompleted, activeSlug]);
 
   // Run once on mount/onboarding to avoid infinite loops with state updates
   useEffect(() => {
-    if (!hasOnboarded) return;
+    if (!activeSlug) return;
 
     const lastDate = new Date(sim.lastActiveDate || Date.now());
     const today = new Date();
@@ -448,21 +459,19 @@ export default function App() {
   }, []);
 
   // Called when an EXISTING player is chosen from the list
-  const handleSelectExisting = useCallback((newPersistor: Persistor, slug: string) => {
+  const handleSelectExisting = useCallback(async (newPersistor: Persistor, slug: string) => {
     setIsExistingPlayer(true);
     setActivePersistor(newPersistor);
     setActiveSlug(slug);
     setGateKey(k => k + 1);
   }, []);
-
   // Called when a BRAND NEW player types their name and hits Go
-  const handleNewUser = useCallback((newPersistor: Persistor, slug: string) => {
+  const handleNewUser = useCallback(async (newPersistor: Persistor, slug: string) => {
     setIsExistingPlayer(false);
     setActivePersistor(newPersistor);
     setActiveSlug(slug);
     setGateKey(k => k + 1);
   }, []);
-
   const handleSetPendingName = useCallback((name: string) => {
     setPendingNewName(name);
   }, []);

@@ -17,7 +17,7 @@ import {
   Persistor,
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import userReducer, { resetUser } from './userSlice';
+import userReducer, { resetUser, pauseDailyTimer } from './userSlice';
 import simulationReducer, { resetSimulation } from './simulationSlice';
 import engagementReducer, { resetEngagement } from './engagementSlice';
 import { persistKeyForSlug } from './profileRegistry';
@@ -105,6 +105,9 @@ let currentPersistKey = DEFAULT_KEY;
  * @param slug  The storage-safe slug. Pass `null` for "no player" state.
  */
 export async function switchUserProfile(slug: string | null): Promise<Persistor> {
+  // Pause the timer before we serialize the state!
+  // store.dispatch(pauseDailyTimer(Date.now())); // Disabled: using native background time explicitly
+
   // ── 1. Save departing player's state directly to their AsyncStorage slot ──
   //       Format must match redux-persist's default layout:
   //         AsyncStorage key : "persist:<rootKey>"

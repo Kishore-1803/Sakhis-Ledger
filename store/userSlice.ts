@@ -48,6 +48,7 @@ interface UserState {
   dailyMissionsCompleted: string[]; // IDs of missions completed today
   dailyRewardClaimed: boolean; // Has the end-of-day bonus been claimed today
   jarsEarnedToday: number;
+  dailyTimeRemaining?: number; // ms left when the timer was paused during profile swap
 }
 
 const initialState: UserState = {
@@ -73,6 +74,7 @@ const initialState: UserState = {
   dailyMissionsCompleted: [],
   dailyRewardClaimed: false,
   jarsEarnedToday: 0,
+  dailyTimeRemaining: 0,
 };
 
 const userSlice = createSlice({
@@ -162,6 +164,23 @@ const userSlice = createSlice({
       }
     },
 
+    pauseDailyTimer(state, action: PayloadAction<number>) {
+      const now = action.payload;
+      if (state.dailyDeadline && state.dailyDeadline > now) {
+        state.dailyTimeRemaining = state.dailyDeadline - now;
+      } else {
+        state.dailyTimeRemaining = 0;
+      }
+    },
+
+    resumeDailyTimer(state, action: PayloadAction<number>) {
+      const now = action.payload;
+      if (state.dailyTimeRemaining && state.dailyTimeRemaining > 0) {
+        state.dailyDeadline = now + state.dailyTimeRemaining;
+        state.dailyTimeRemaining = 0;
+      }
+    },
+
     // ── Antigravity Update Reducers ──────────────────────────────────────────
     applyAntigravityResults(state, action: PayloadAction<{ jarsEarned: number, updatedMistakes: Record<string, MistakeRecord> }>) {
       const { jarsEarned, updatedMistakes } = action.payload;
@@ -200,6 +219,7 @@ export const {
   setAvatar, addXP, addTrophy, incrementStreak, toggleDarkMode,
   setDailyDeadline, completeDailyMission, claimDailyReward, unlockBadge,
   applyAntigravityResults, archiveDailyPerformance,
+  pauseDailyTimer, resumeDailyTimer,
   resetUser,
 } = userSlice.actions;
 

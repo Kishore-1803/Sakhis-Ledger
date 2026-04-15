@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, StatusBar, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import { setUserName, setLanguage, setGuide, completeOnboarding } from '../store/userSlice';
@@ -105,23 +105,25 @@ export default function OnboardingScreen({ onComplete, prefillName }: Onboarding
         
         {/* Step 1: Language */}
         {currentStepId === 'language' && (
-          <View style={styles.card}>
+          <View style={[styles.card, { flex: 1, paddingBottom: 0 }]}>
             <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
               <Feather name="globe" size={24} color={Colors.sakhi.darker} style={{marginRight: 8}} />
               <Text style={styles.cardTitle}>Choose Your Language</Text>
             </View>
-            <View style={styles.langGrid}>
-              {LANGUAGES.map(l => (
-                <TouchableOpacity 
-                  key={l.code} 
-                  style={[styles.langBtn, lang === l.code && styles.langBtnActive]}
-                  onPress={() => setLang(l.code)}
-                >
-                  <Text style={[styles.langLabel, lang === l.code && {color: Colors.sakhi.goldDark}]}>{l.label}</Text>
-                  <Text style={styles.langSub}>{l.subLabel}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+              <View style={styles.langGrid}>
+                {LANGUAGES.map(l => (
+                  <TouchableOpacity 
+                    key={l.code} 
+                    style={[styles.langBtn, lang === l.code && styles.langBtnActive]}
+                    onPress={() => setLang(l.code)}
+                  >
+                    <Text style={[styles.langLabel, lang === l.code && {color: Colors.sakhi.goldDark}]}>{l.label}</Text>
+                    <Text style={styles.langSub}>{l.subLabel}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
           </View>
         )}
 
@@ -292,10 +294,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 12,
   },
   langBtn: {
-    width: '48%',
+    width: '47%',
+    marginBottom: 12,
     backgroundColor: Colors.neutral.offWhite,
     borderRadius: 14,
     paddingVertical: 16,
