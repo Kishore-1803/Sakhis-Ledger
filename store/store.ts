@@ -17,15 +17,9 @@ import {
   Persistor,
 } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-<<<<<<< HEAD
-import userReducer, { resetUser, pauseDailyTimer } from './userSlice';
-import simulationReducer, { resetSimulation } from './simulationSlice';
-import engagementReducer, { resetEngagement } from './engagementSlice';
-=======
-import userReducer, { resetUser, hydrateUser } from './userSlice';
+import userReducer, { resetUser, pauseDailyTimer, hydrateUser } from './userSlice';
 import simulationReducer, { resetSimulation, hydrateSimulation } from './simulationSlice';
 import engagementReducer, { resetEngagement, hydrateEngagement } from './engagementSlice';
->>>>>>> d5b78ed (claudeguru)
 import { persistKeyForSlug } from './profileRegistry';
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
@@ -39,7 +33,7 @@ const rootReducer = combineReducers({
 export type RootState    = ReturnType<typeof rootReducer>;
 export type AppDispatch  = typeof store.dispatch;
 
-// ─── Boolean-fix transform (same logic as before) ────────────────────────────
+// ─── Boolean-fix transform ────────────────────────────────────────────────────
 
 const boolTransform = {
   in:  (state: any) => state,
@@ -100,26 +94,9 @@ let currentPersistKey = DEFAULT_KEY;
  * Saves the current player's Redux state to AsyncStorage, then hot-swaps
  * the store to the incoming player's slot.
  *
- * KEY IMPROVEMENT — manual pre-load:
- *   After saving the departing player and resetting the store, we immediately
- *   read the incoming player's saved state from AsyncStorage and dispatch it
- *   into the store via hydrateUser/hydrateSimulation/hydrateEngagement.
- *   This means the store contains the correct data BEFORE React re-renders,
- *   so components never flash with empty/reset state regardless of how fast
- *   PersistGate bootstraps.
- *
  * @param slug  Storage-safe slug. Pass `null` to go back to Login screen.
  */
 export async function switchUserProfile(slug: string | null): Promise<Persistor> {
-<<<<<<< HEAD
-  // Pause the timer before we serialize the state!
-  // store.dispatch(pauseDailyTimer(Date.now())); // Disabled: using native background time explicitly
-
-  // ── 1. Save departing player's state directly to their AsyncStorage slot ──
-  //       Format must match redux-persist's default layout:
-  //         AsyncStorage key : "persist:<rootKey>"
-  //         Value            : JSON({ user: '{"name":...}', simulation: ..., _persist: ... })
-=======
   // ── 1. Flush + save departing player's state ──────────────────────────────
   //       flush() drains any pending debounced write from redux-persist so our
   //       manual snapshot is always consistent with what's in storage.
@@ -127,7 +104,6 @@ export async function switchUserProfile(slug: string | null): Promise<Persistor>
     await persistor.flush();
   } catch {}
 
->>>>>>> d5b78ed (claudeguru)
   try {
     const state = store.getState() as any;
     const payload: Record<string, string> = {
@@ -158,7 +134,7 @@ export async function switchUserProfile(slug: string | null): Promise<Persistor>
   currentPersistKey = newKey;
 
   // ── 5. Pre-load incoming player's data (before React render) ─────────────
-  //       Dispatching hydrate actions now ensures the store already holds the
+  //       Dispatching hydrate actions ensures the store already holds the
   //       correct state when React re-renders, regardless of PersistGate timing.
   if (slug) {
     try {
@@ -189,15 +165,10 @@ export async function switchUserProfile(slug: string | null): Promise<Persistor>
   persistor = newPersistor;
 
   // ── 7. Wait for REHYDRATE to complete before returning ────────────────────
-  //       This is the key reliability fix: switchUserProfile now only resolves
-  //       AFTER the new persistor has fully bootstrapped (REHYDRATE done).
-  //       By the time handleSelectExisting / handleNewUser run in App.tsx, the
-  //       store already has the correct player state — PersistGate renders
-  //       children instantly instead of flashing a blank/loading screen, and
-  //       there is NO window where the Fortune Tree, Jars, or any other slice
-  //       can be read with stale or reset state.
+  //       switchUserProfile only resolves AFTER the new persistor has fully
+  //       bootstrapped (REHYDRATE done) — no more race conditions with
+  //       Fortune Tree, Jars, or any other slice showing stale/reset state.
   await new Promise<void>((resolve) => {
-    // Already bootstrapped (REHYDRATE already fired synchronously — rare but possible)
     if (newPersistor.getState().bootstrapped) {
       resolve();
       return;

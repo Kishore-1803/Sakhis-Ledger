@@ -227,12 +227,8 @@ export const {
   setAvatar, addXP, addTrophy, incrementStreak, toggleDarkMode,
   setDailyDeadline, completeDailyMission, claimDailyReward, unlockBadge,
   applyAntigravityResults, archiveDailyPerformance,
-<<<<<<< HEAD
   pauseDailyTimer, resumeDailyTimer,
-  resetUser,
-=======
   resetUser, hydrateUser,
->>>>>>> d5b78ed (claudeguru)
 } = userSlice.actions;
 
 export default userSlice.reducer;
