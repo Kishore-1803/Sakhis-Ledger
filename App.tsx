@@ -176,6 +176,7 @@ function AppNavigator({
   const userAvatar  = useSelector((state: RootState) => state.user.avatar);
   const sim         = useSelector((state: RootState) => state.simulation);
   const guide       = useSelector((state: RootState) => state.user.guide);
+  const lang        = useSelector((state: RootState) => state.user.language || 'en');
   const jarHealthState = useSelector((state: RootState) => state.engagement?.jarHealth);
 
   const [showMonthEnd, setShowMonthEnd] = useState(false);
@@ -414,6 +415,7 @@ function AppNavigator({
         <TreeGrowthModal
           visible={showTreeGrowth}
           newTier={newTreeTier}
+          lang={lang}
           onDismiss={() => {
             setShowTreeGrowth(false);
             setNewTreeTier(null);

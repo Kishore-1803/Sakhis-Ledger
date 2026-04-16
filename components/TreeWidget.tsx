@@ -6,11 +6,15 @@ import { useTheme } from '../utils/useTheme';
 import { Colors } from '../constants/theme';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
+import { t, LanguageCode, TranslationKey } from '../utils/i18n';
 
 const TREE_TIERS = [0, 100, 250, 500, 1000, 1800, 3000, 5000, 8000, 12000];
 
 const TIER_EMOJI = ['🌱','🌿','🪴','🌲','🌳','🌴','🎄','🌳','🌺','✨'];
-const TIER_LABEL = ['Seed','Sprout','Sapling','Young Tree','Mature Tree','Palm','Rich Tree','Elder Tree','Blossoming','Village Tree'];
+const TIER_LABEL_KEYS: TranslationKey[] = [
+  'treeTier1','treeTier2','treeTier3','treeTier4','treeTier5',
+  'treeTier6','treeTier7','treeTier8','treeTier9','treeTier10',
+];
 const TIER_COLOR = ['#7FB77E','#52B788','#40916C','#2D6A4F','#1B4332','#F4A261','#E76F51','#264653','#E9C46A','#FFD700'];
 
 interface TreeWidgetProps { onPress?: () => void; }
@@ -18,6 +22,7 @@ interface TreeWidgetProps { onPress?: () => void; }
 export default function TreeWidget({ onPress }: TreeWidgetProps) {
   const theme       = useTheme();
   const fortuneTree = useSelector((state: RootState) => state.engagement?.fortuneTree);
+  const lang        = useSelector((state: RootState) => state.user.language as LanguageCode);
 
   // Read directly from persisted Redux state
   const growthPoints = fortuneTree?.growthPoints ?? 0;
@@ -28,9 +33,9 @@ export default function TreeWidget({ onPress }: TreeWidgetProps) {
   const tierRange        = Math.max(1, nextThreshold - currentThreshold);
   const progress         = Math.min(1, (growthPoints - currentThreshold) / tierRange);
 
-  const emoji = TIER_EMOJI[Math.min(currentTier, TIER_EMOJI.length - 1)];
-  const label = TIER_LABEL[Math.min(currentTier, TIER_LABEL.length - 1)];
-  const color = TIER_COLOR[Math.min(currentTier, TIER_COLOR.length - 1)];
+  const emoji     = TIER_EMOJI[Math.min(currentTier, TIER_EMOJI.length - 1)];
+  const labelKey  = TIER_LABEL_KEYS[Math.min(currentTier, TIER_LABEL_KEYS.length - 1)];
+  const color     = TIER_COLOR[Math.min(currentTier, TIER_COLOR.length - 1)];
 
   // Animated progress bar
   const barW = useRef(new Animated.Value(0)).current;
@@ -54,9 +59,9 @@ export default function TreeWidget({ onPress }: TreeWidgetProps) {
         </View>
         <View style={styles.info}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[styles.title, { color: theme.text }]}>Fortune Tree</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{t('fortuneTree', lang)}</Text>
             <View style={[styles.tierChip, { backgroundColor: color + '25', borderColor: color + '60' }]}>
-              <Text style={[styles.tierChipText, { color }]}>{label}</Text>
+              <Text style={[styles.tierChipText, { color }]}>{t(labelKey, lang)}</Text>
             </View>
           </View>
           <Text style={[styles.pts, { color: theme.textSub }]}>

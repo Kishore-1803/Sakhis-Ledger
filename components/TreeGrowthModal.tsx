@@ -8,13 +8,21 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import TranslatedText from './TranslatedText';
 import { LevelUpExplosion } from './animations/LevelUpExplosion';
+import { t, LanguageCode, TranslationKey } from '../utils/i18n';
+
+// Map tier number to branch name translation key
+const BRANCH_NAME_KEYS: Record<number, TranslationKey> = {
+  3: 'branchProtection',
+  5: 'branchEducation',
+  7: 'branchBusiness',
+  10: 'branchProsperity',
+};
 
 interface TreeGrowthModalProps {
   visible: boolean;
   newTier: number;
-  branchName?: string;
+  lang?: string;
   onDismiss: () => void;
 }
 
@@ -30,9 +38,10 @@ const BRANCH_EMOJIS: Record<number, string> = {
 export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
   visible,
   newTier,
-  branchName,
+  lang = 'en',
   onDismiss,
 }) => {
+  const l = lang as LanguageCode;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const [showExplosion, setShowExplosion] = React.useState(false);
@@ -60,7 +69,8 @@ export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
     }
   }, [visible]);
 
-  const branchEmoji = BRANCH_EMOJIS[newTier as keyof typeof BRANCH_EMOJIS] || '🌳';
+  const branchEmoji  = BRANCH_EMOJIS[newTier as keyof typeof BRANCH_EMOJIS] || '🌳';
+  const branchNameKey = BRANCH_NAME_KEYS[newTier];
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -86,7 +96,7 @@ export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
           <Text style={styles.celebrationText}>🎉</Text>
 
           {/* Title */}
-          <Text style={styles.title}>Your Fortune Tree Grew!</Text>
+          <Text style={styles.title}>{t('fortuneTreeGrew', l)}</Text>
 
           {/* Tier Info */}
           <View style={styles.tierContainer}>
@@ -95,26 +105,22 @@ export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
           </View>
 
           {/* Branch Info */}
-          {[3, 5, 7, 10].includes(newTier) && (
+          {[3, 5, 7, 10].includes(newTier) && branchNameKey && (
             <View style={styles.branchInfo}>
               <Text style={styles.branchIcon}>{branchEmoji}</Text>
-              <Text style={styles.branchLabel}>New Branch Unlocked!</Text>
-              <Text style={styles.branchName}>{branchName}</Text>
+              <Text style={styles.branchLabel}>{t('newBranchUnlocked', l)}</Text>
+              <Text style={styles.branchName}>{t(branchNameKey, l)}</Text>
             </View>
           )}
 
           {/* Message */}
-          <Text style={styles.message}>
-            Your consistent savings and smart financial choices are paying off!
-            {'\n\n'}
-            Keep allocating to jars and earning XP to grow your tree even stronger.
-          </Text>
+          <Text style={styles.message}>{t('treeGrowthMsg', l)}</Text>
 
           {/* Achievement Stats */}
           <View style={styles.statsContainer}>
             <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Level</Text>
-              <Text style={styles.statValue}>+1 Tier</Text>
+              <Text style={styles.statLabel}>Tier</Text>
+              <Text style={styles.statValue}>+1</Text>
             </View>
             <View style={[styles.statBox, { borderLeftWidth: 1, borderLeftColor: 'rgba(0,0,0,0.1)' }]}>
               <Text style={styles.statLabel}>Progress</Text>
@@ -128,7 +134,7 @@ export const TreeGrowthModal: React.FC<TreeGrowthModalProps> = ({
             onPress={onDismiss}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>See My Tree</Text>
+            <Text style={styles.buttonText}>{t('seeMyTree', l)}</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>

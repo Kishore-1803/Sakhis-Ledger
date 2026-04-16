@@ -1,19 +1,14 @@
 /**
- * FortuneTreeScreen.tsx  –  Fully rewritten for engagement.
+ * FortuneTreeScreen.tsx  –  Fully localised version.
  *
- * Key changes vs the old version:
- *  • Reads growthPoints from Redux (fortuneTree.growthPoints) — not recomputed
- *  • Rich animated tree with per-tier colour palette + glowing ring
- *  • Activity Tracker shows how many points each action awards
- *  • Milestone cards with celebration state (reached, current, locked)
- *  • "How to grow" accordion section — offline, SHG-friendly
- *  • No leaderboard — all data is local
+ * All visible strings now go through t(key, lang) so every language
+ * configured in i18n.ts is displayed correctly.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Animated, Easing, Dimensions, Modal,
+  Animated, Easing, Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -23,9 +18,7 @@ import { Colors } from '../constants/theme';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AudioEngine } from '../utils/audioEngine';
-import { LanguageCode } from '../utils/i18n';
-
-const { width } = Dimensions.get('window');
+import { t, LanguageCode, TranslationKey } from '../utils/i18n';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -33,38 +26,52 @@ const TREE_TIERS = [0, 100, 250, 500, 1000, 1800, 3000, 5000, 8000, 12000];
 
 interface TierMeta {
   emoji: string;
-  label: string;
+  labelKey: TranslationKey;
+  descKey: TranslationKey;
   color: string;
   glowColor: string;
-  desc: string;
 }
 
 const TIER_META: TierMeta[] = [
-  { emoji: '🌱', label: 'Seed',        color: '#7FB77E', glowColor: '#7FB77E50', desc: 'Your journey begins. Every rupee saved is a seed planted.' },
-  { emoji: '🌿', label: 'Sprout',      color: '#52B788', glowColor: '#52B78850', desc: 'Tiny roots taking hold. Keep budgeting every day!' },
-  { emoji: '🪴', label: 'Sapling',     color: '#40916C', glowColor: '#40916C60', desc: 'Standing tall! Your savings jar is building strength.' },
-  { emoji: '🌲', label: 'Young Tree',  color: '#2D6A4F', glowColor: '#2D6A4F60', desc: 'Protection branch unlocked. Emergencies can\'t break you now.' },
-  { emoji: '🌳', label: 'Mature Tree', color: '#1B4332', glowColor: '#1B433270', desc: 'Solid and strong. You\'re planning ahead like a true Sakhi.' },
-  { emoji: '🌴', label: 'Palm',        color: '#F4A261', glowColor: '#F4A26170', desc: 'Education branch blooms. Knowledge is your greatest wealth.' },
-  { emoji: '🎄', label: 'Rich Tree',   color: '#E76F51', glowColor: '#E76F5170', desc: 'So tall the whole village sees your growth.' },
-  { emoji: '🌳', label: 'Elder Tree',  color: '#264653', glowColor: '#26465370', desc: 'Business branch strong. You are building something lasting.' },
-  { emoji: '🌺', label: 'Blossoming',  color: '#E9C46A', glowColor: '#E9C46A70', desc: 'Your prosperity touches everyone around you.' },
-  { emoji: '✨🌳✨', label: 'Village Tree', color: '#FFD700', glowColor: '#FFD70080', desc: 'Peak of Prosperity! Share your wisdom with your SHG sisters.' },
+  { emoji: '🌱', labelKey: 'treeTier1',  descKey: 'treeTier1Desc',  color: '#7FB77E', glowColor: '#7FB77E50' },
+  { emoji: '🌿', labelKey: 'treeTier2',  descKey: 'treeTier2Desc',  color: '#52B788', glowColor: '#52B78850' },
+  { emoji: '🪴', labelKey: 'treeTier3',  descKey: 'treeTier3Desc',  color: '#40916C', glowColor: '#40916C60' },
+  { emoji: '🌲', labelKey: 'treeTier4',  descKey: 'treeTier4Desc',  color: '#2D6A4F', glowColor: '#2D6A4F60' },
+  { emoji: '🌳', labelKey: 'treeTier5',  descKey: 'treeTier5Desc',  color: '#1B4332', glowColor: '#1B433270' },
+  { emoji: '🌴', labelKey: 'treeTier6',  descKey: 'treeTier6Desc',  color: '#F4A261', glowColor: '#F4A26170' },
+  { emoji: '🎄', labelKey: 'treeTier7',  descKey: 'treeTier7Desc',  color: '#E76F51', glowColor: '#E76F5170' },
+  { emoji: '🌳', labelKey: 'treeTier8',  descKey: 'treeTier8Desc',  color: '#264653', glowColor: '#26465370' },
+  { emoji: '🌺', labelKey: 'treeTier9',  descKey: 'treeTier9Desc',  color: '#E9C46A', glowColor: '#E9C46A70' },
+  { emoji: '✨🌳✨', labelKey: 'treeTier10', descKey: 'treeTier10Desc', color: '#FFD700', glowColor: '#FFD70080' },
 ];
 
-const BRANCHES = [
-  { tier: 3, icon: '🛡️', name: 'Protection Branch', detail: 'Emergency fund mastered — you are protected from sudden shocks.' },
-  { tier: 5, icon: '📚', name: 'Education Branch',   detail: 'You invest in knowledge — it multiplies like compound interest.' },
-  { tier: 7, icon: '🌱', name: 'Business Branch',    detail: 'You think like an entrepreneur. Small businesses start here.' },
-  { tier: 10, icon: '🌳', name: 'Prosperity Branch', detail: 'Village-level impact. Your tree shelters your whole SHG.' },
+interface BranchDef {
+  tier: number;
+  icon: string;
+  nameKey: TranslationKey;
+  detailKey: TranslationKey;
+}
+
+const BRANCHES: BranchDef[] = [
+  { tier: 3,  icon: '🛡️', nameKey: 'branchProtection', detailKey: 'branchProtectionDetail' },
+  { tier: 5,  icon: '📚', nameKey: 'branchEducation',   detailKey: 'branchEducationDetail'   },
+  { tier: 7,  icon: '🌱', nameKey: 'branchBusiness',    detailKey: 'branchBusinessDetail'    },
+  { tier: 10, icon: '🌳', nameKey: 'branchProsperity',  detailKey: 'branchProsperityDetail'  },
 ];
 
-const ACTIVITIES = [
-  { icon: '🏺', label: 'Allocate ₹100 to a Jar',   points: 1,  tip: 'Every ₹100 = 1 growth point' },
-  { icon: '📖', label: 'Complete a Quest (optimal)',  points: 15, tip: 'Optimal choices = 15 pts' },
-  { icon: '📖', label: 'Complete a Quest (learning)', points: 8,  tip: 'Any choice = 8 pts' },
-  { icon: '🛡️', label: 'Bust a Scam (correct)',       points: 20, tip: 'Sharp mind = 20 pts' },
-  { icon: '🛡️', label: 'Bust a Scam (learning)',      points: 5,  tip: 'Every attempt counts' },
+interface ActivityDef {
+  icon: string;
+  labelKey: TranslationKey;
+  points: number;
+  tipKey: TranslationKey;
+}
+
+const ACTIVITIES: ActivityDef[] = [
+  { icon: '🏺', labelKey: 'activityAllocate',      points: 1,  tipKey: 'activityAllocateTip'      },
+  { icon: '📖', labelKey: 'activityQuestOptimal',  points: 15, tipKey: 'activityQuestOptimalTip'  },
+  { icon: '📖', labelKey: 'activityQuestLearning', points: 8,  tipKey: 'activityQuestLearningTip' },
+  { icon: '🛡️', labelKey: 'activityScamCorrect',   points: 20, tipKey: 'activityScamCorrectTip'   },
+  { icon: '🛡️', labelKey: 'activityScamLearning',  points: 5,  tipKey: 'activityScamLearningTip'  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -75,12 +82,12 @@ export default function FortuneTreeScreen() {
   const user        = useSelector((state: RootState) => state.user);
   const lang        = user.language as LanguageCode;
 
-  const [selectedBranch, setSelectedBranch] = useState<typeof BRANCHES[0] | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<BranchDef | null>(null);
   const [showActivities, setShowActivities] = useState(false);
 
   // ── Derived values
   const growthPoints = fortuneTree?.growthPoints ?? 0;
-  const currentTier  = Math.max(0, (fortuneTree?.treeTier ?? 1) - 1); // 0-indexed for TIER_META
+  const currentTier  = Math.max(0, (fortuneTree?.treeTier ?? 1) - 1); // 0-indexed
   const tierMeta     = TIER_META[Math.min(currentTier, TIER_META.length - 1)];
 
   // Progress within the current tier
@@ -96,7 +103,6 @@ export default function FortuneTreeScreen() {
   const barW   = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Tree sway
     Animated.loop(
       Animated.sequence([
         Animated.timing(sway, { toValue: 1, duration: 2500, useNativeDriver: true, easing: Easing.inOut(Easing.sin) }),
@@ -104,7 +110,6 @@ export default function FortuneTreeScreen() {
       ])
     ).start();
 
-    // Glow pulse
     Animated.loop(
       Animated.sequence([
         Animated.timing(glow, { toValue: 1, duration: 1800, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
@@ -112,7 +117,6 @@ export default function FortuneTreeScreen() {
       ])
     ).start();
 
-    // Progress bar animation
     Animated.timing(barW, { toValue: tierProgress, duration: 1200, useNativeDriver: false, easing: Easing.out(Easing.cubic) }).start();
   }, [tierProgress]);
 
@@ -120,10 +124,12 @@ export default function FortuneTreeScreen() {
 
   const playAudio = () => {
     AudioEngine.play(
-      `Fortune Tree. You are at tier ${currentTier + 1}, ${tierMeta.label}. ${tierMeta.desc} Keep allocating to your jars and completing quests to grow further.`,
+      `${t('fortuneTree', lang)}. ${t('fortuneTreeSub', lang)}. ${t(tierMeta.descKey, lang)}`,
       lang
     );
   };
+
+  const nextTierMeta = TIER_META[Math.min(currentTier + 1, TIER_META.length - 1)];
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.bg }]}>
@@ -131,8 +137,8 @@ export default function FortuneTreeScreen() {
       {/* ── Header ── */}
       <View style={[styles.header, { backgroundColor: theme.headerBg || '#1A4731' }]}>
         <View>
-          <Text style={styles.headerTitle}>🌳 Fortune Tree</Text>
-          <Text style={styles.headerSub}>Your wealth grows like a tree</Text>
+          <Text style={styles.headerTitle}>🌳 {t('fortuneTree', lang)}</Text>
+          <Text style={styles.headerSub}>{t('fortuneTreeSub', lang)}</Text>
         </View>
         <TouchableOpacity onPress={playAudio} style={styles.audioBtn}>
           <Feather name="volume-2" size={22} color={Colors.sakhi.goldLight} />
@@ -145,21 +151,18 @@ export default function FortuneTreeScreen() {
       >
         {/* ── Tree Visual Card ── */}
         <View style={[styles.treeCard, { shadowColor: tierMeta.glowColor }]}>
-
-          {/* Glow ring */}
           <Animated.View style={[styles.glowRing, { borderColor: tierMeta.glowColor, opacity: glow }]} />
-
-          {/* Tree emoji */}
           <Animated.Text style={[styles.treeEmoji, { transform: [{ rotate: swayDeg }] }]}>
             {tierMeta.emoji}
           </Animated.Text>
-
-          {/* Tier badge */}
           <View style={[styles.tierBadge, { backgroundColor: tierMeta.color }]}>
-            <Text style={styles.tierBadgeText}>Tier {currentTier + 1} — {tierMeta.label}</Text>
+            <Text style={styles.tierBadgeText}>
+              Tier {currentTier + 1} — {t(tierMeta.labelKey, lang)}
+            </Text>
           </View>
-
-          <Text style={[styles.tierDesc, { color: theme.textSub }]}>{tierMeta.desc}</Text>
+          <Text style={[styles.tierDesc, { color: theme.textSub }]}>
+            {t(tierMeta.descKey, lang)}
+          </Text>
         </View>
 
         {/* ── Growth Progress ── */}
@@ -167,7 +170,9 @@ export default function FortuneTreeScreen() {
           <View style={styles.progressRow}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <MaterialCommunityIcons name="sprout" size={18} color={Colors.sakhi.green} style={{ marginRight: 6 }} />
-              <Text style={[styles.progressLabel, { color: theme.text }]}>Growth Points</Text>
+              <Text style={[styles.progressLabel, { color: theme.text }]}>
+                {t('growthPoints', lang)}
+              </Text>
             </View>
             <Text style={[styles.progressValue, { color: Colors.sakhi.green }]}>
               {growthPoints.toLocaleString('en-IN')}
@@ -188,21 +193,21 @@ export default function FortuneTreeScreen() {
 
           {isMaxTier ? (
             <Text style={[styles.progressHint, { color: Colors.sakhi.goldLight }]}>
-              🏆 Maximum Tier Reached! You are a Village Tree!
+              🏆 {t('maxTierMsg', lang)}
             </Text>
           ) : (
             <Text style={[styles.progressHint, { color: theme.textSub }]}>
-              {(nextThreshold - growthPoints).toLocaleString('en-IN')} points to {TIER_META[currentTier + 1]?.label || 'next tier'}
+              {(nextThreshold - growthPoints).toLocaleString('en-IN')} {t('pointsToNextTier', lang)} {t(nextTierMeta.labelKey, lang)}
             </Text>
           )}
         </View>
 
         {/* ── Milestone Rail ── */}
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>🪜 Milestones</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>🪜 {t('milestones', lang)}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 24 }}>
           <View style={styles.milestoneRow}>
             {TIER_META.map((m, i) => {
-              const reached  = i < currentTier;
+              const reached   = i < currentTier;
               const isCurrent = i === currentTier;
               return (
                 <View key={i} style={styles.milestoneItem}>
@@ -218,7 +223,7 @@ export default function FortuneTreeScreen() {
                     <View style={[styles.connectorLine, { backgroundColor: reached ? Colors.sakhi.green : theme.border }]} />
                   )}
                   <Text style={[styles.milestoneLabel, { color: isCurrent ? tierMeta.color : theme.textSub }]}>
-                    {m.label}
+                    {t(m.labelKey, lang)}
                   </Text>
                 </View>
               );
@@ -227,7 +232,7 @@ export default function FortuneTreeScreen() {
         </ScrollView>
 
         {/* ── Branches ── */}
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>🌿 Branches to Unlock</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>🌿 {t('branchesToUnlock', lang)}</Text>
         {BRANCHES.map((b) => {
           const unlocked = (fortuneTree?.treeTier ?? 0) >= b.tier;
           return (
@@ -244,9 +249,13 @@ export default function FortuneTreeScreen() {
             >
               <Text style={styles.branchIcon}>{b.icon}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.branchName, { color: theme.text }]}>{b.name}</Text>
+                <Text style={[styles.branchName, { color: theme.text }]}>
+                  {t(b.nameKey, lang)}
+                </Text>
                 <Text style={[styles.branchMeta, { color: theme.textSub }]}>
-                  {unlocked ? '✅ Unlocked' : `🔒 Unlocks at Tier ${b.tier}`}
+                  {unlocked
+                    ? `✅ ${t('unlockedLabel', lang)}`
+                    : `🔒 ${t('unlocksAtTier', lang)} ${b.tier}`}
                 </Text>
               </View>
               {unlocked && <Feather name="chevron-right" size={20} color={Colors.sakhi.green} />}
@@ -261,7 +270,9 @@ export default function FortuneTreeScreen() {
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialCommunityIcons name="sprout-outline" size={20} color={Colors.sakhi.green} style={{ marginRight: 8 }} />
-            <Text style={[styles.accordionTitle, { color: theme.text }]}>How to Grow Your Tree</Text>
+            <Text style={[styles.accordionTitle, { color: theme.text }]}>
+              {t('howToGrow', lang)}
+            </Text>
           </View>
           <Feather name={showActivities ? 'chevron-up' : 'chevron-down'} size={20} color={theme.textSub} />
         </TouchableOpacity>
@@ -272,8 +283,12 @@ export default function FortuneTreeScreen() {
               <View key={i} style={[styles.activityRow, i < ACTIVITIES.length - 1 && styles.activityDivider]}>
                 <Text style={styles.activityIcon}>{a.icon}</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.activityLabel, { color: theme.text }]}>{a.label}</Text>
-                  <Text style={[styles.activityTip, { color: theme.textSub }]}>{a.tip}</Text>
+                  <Text style={[styles.activityLabel, { color: theme.text }]}>
+                    {t(a.labelKey, lang)}
+                  </Text>
+                  <Text style={[styles.activityTip, { color: theme.textSub }]}>
+                    {t(a.tipKey, lang)}
+                  </Text>
                 </View>
                 <View style={[styles.pointsBadge, { backgroundColor: Colors.sakhi.green + '20' }]}>
                   <Text style={styles.pointsText}>+{a.points}</Text>
@@ -295,13 +310,17 @@ export default function FortuneTreeScreen() {
         >
           <View style={[styles.modalCard, { backgroundColor: theme.card }]}>
             <Text style={styles.modalEmoji}>{selectedBranch?.icon}</Text>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>{selectedBranch?.name}</Text>
-            <Text style={[styles.modalDetail, { color: theme.textSub }]}>{selectedBranch?.detail}</Text>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>
+              {selectedBranch ? t(selectedBranch.nameKey, lang) : ''}
+            </Text>
+            <Text style={[styles.modalDetail, { color: theme.textSub }]}>
+              {selectedBranch ? t(selectedBranch.detailKey, lang) : ''}
+            </Text>
             <TouchableOpacity
               style={[styles.modalBtn, { backgroundColor: Colors.sakhi.green }]}
               onPress={() => setSelectedBranch(null)}
             >
-              <Text style={styles.modalBtnText}>Keep Growing! 🌱</Text>
+              <Text style={styles.modalBtnText}>{t('keepGrowing', lang)} 🌱</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -350,7 +369,6 @@ const styles = StyleSheet.create({
 
   scroll: { padding: 16 },
 
-  // ── Tree card
   treeCard: {
     alignItems: 'center',
     borderRadius: 24,
@@ -400,7 +418,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
 
-  // ── Progress card
   progressCard: {
     borderRadius: 18,
     padding: 16,
@@ -417,30 +434,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  progressLabel: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  progressValue: {
-    fontSize: 22,
-    fontWeight: '900',
-  },
+  progressLabel: { fontSize: 15, fontWeight: '800' },
+  progressValue: { fontSize: 22, fontWeight: '900' },
   progressTrack: {
     height: 14,
     borderRadius: 7,
     overflow: 'hidden',
     marginBottom: 8,
   },
-  progressFill: {
-    height: '100%',
-    borderRadius: 7,
-  },
-  progressHint: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
+  progressFill: { height: '100%', borderRadius: 7 },
+  progressHint: { fontSize: 12, fontWeight: '700' },
 
-  // ── Section title
   sectionTitle: {
     fontSize: 17,
     fontWeight: '900',
@@ -448,17 +452,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  // ── Milestone rail
   milestoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 8,
     paddingBottom: 8,
   },
-  milestoneItem: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
+  milestoneItem: { alignItems: 'center', flexDirection: 'row' },
   milestoneBubble: {
     width: 44,
     height: 44,
@@ -489,7 +489,6 @@ const styles = StyleSheet.create({
     left: -3,
   },
 
-  // ── Branch cards
   branchCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -508,7 +507,6 @@ const styles = StyleSheet.create({
   branchName: { fontSize: 15, fontWeight: '800', marginBottom: 3 },
   branchMeta: { fontSize: 12, fontWeight: '600' },
 
-  // ── Accordion
   accordionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -558,7 +556,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
-  // ── Branch modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.65)',
